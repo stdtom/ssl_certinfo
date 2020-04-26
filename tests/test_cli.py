@@ -5,8 +5,9 @@
 Use tox or py.test to run the test suite.
 """
 
-import pytest
 from argparse import ArgumentTypeError
+
+import pytest
 
 from ssl_certinfo import cli
 

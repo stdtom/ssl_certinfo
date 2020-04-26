@@ -7,7 +7,6 @@ Use tox or py.test to run the test suite.
 
 import pytest
 
-
 from ssl_certinfo import validation
 
 

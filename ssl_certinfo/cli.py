@@ -1,6 +1,7 @@
 """Console script for ssl_certinfo."""
 import argparse
 import sys
+
 from ssl_certinfo import validation
 
 

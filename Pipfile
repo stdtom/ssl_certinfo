@@ -13,10 +13,10 @@ coverage = "*"
 Sphinx = "*"
 twine = "*"
 pre-commit = "*"
-
 pytest = "*"
 pytest-runner = "*"
 black = "==19.10b0"
+isort = "*"
 
 [packages]
 

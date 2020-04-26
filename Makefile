@@ -54,7 +54,8 @@ clean-test: ## remove test and coverage artifacts
 lint: ## check style with flake8
 	pipenv run flake8 ssl_certinfo tests
 
-black: ## check style with flake8
+format: ## check style with flake8
+	pipenv run isort
 	pipenv run black ssl_certinfo tests
 
 test: ## run tests quickly with the default Python

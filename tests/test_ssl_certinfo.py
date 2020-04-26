@@ -5,9 +5,9 @@
 Use tox or py.test to run the test suite.
 """
 from datetime import datetime
-from cryptography.x509 import load_pem_x509_certificate
-from cryptography.hazmat.backends import default_backend
 
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509 import load_pem_x509_certificate
 
 from ssl_certinfo import ssl_certinfo
 
