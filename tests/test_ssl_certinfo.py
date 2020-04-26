@@ -58,19 +58,21 @@ WUjbST4VXmdaol7uzFMojA4zkxQDZAvF5XgJlAFadfySna/teik=
 -----END CERTIFICATE-----
 """
 
-    github_cert_obj = load_pem_x509_certificate(str.encode(github_cert_str),
-                                                default_backend())
+    github_cert_obj = load_pem_x509_certificate(
+        str.encode(github_cert_str), default_backend()
+    )
 
     expected = {
-        'CN':             'github.com',
-        'SAN':            'github.com;www.github.com',
-        'valid_from':     '2018-05-08T00:00:00',
-        'valid_to':       '2020-06-03T12:00:00',
+        "CN": "github.com",
+        "SAN": "github.com;www.github.com",
+        "valid_from": "2018-05-08T00:00:00",
+        "valid_to": "2020-06-03T12:00:00",
     }
-    expected['expire_in_days'] = (datetime.fromisoformat(expected['valid_to'])
-                                  - datetime.now()).days
+    expected["expire_in_days"] = (
+        datetime.fromisoformat(expected["valid_to"]) - datetime.now()
+    ).days
 
     cert_info = ssl_certinfo.get_cert_info(github_cert_obj)
 
-    assert cert_info['SAN'] == expected['SAN']
+    assert cert_info["SAN"] == expected["SAN"]
     assert cert_info == expected

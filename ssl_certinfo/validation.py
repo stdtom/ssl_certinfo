@@ -26,5 +26,5 @@ def is_valid_hostname(hostname):
     if re.match(r"[0-9]+$", labels[-1]):
         return False
 
-    allowed = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
+    allowed = re.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$", re.IGNORECASE)
     return all(allowed.match(label) for label in labels)
