@@ -16,6 +16,7 @@ pre-commit = "*"
 
 pytest = "*"
 pytest-runner = "*"
+black = "==19.10b0"
 
 [packages]
 
