@@ -19,7 +19,7 @@ install:
 # Command to run tests, e.g. python setup.py test
 script:
   - tox
-  - coverage run --source asamplelib -m pytest
+  - coverage run --source ssl_certinfo -m pytest
   - coverage report -m
 
 after_script:
