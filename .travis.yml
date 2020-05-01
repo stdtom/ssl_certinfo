@@ -9,7 +9,6 @@ python:
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
   - pip install -U tox-travis
-  - pip install -U coverage
   - pip install -U coveralls
   - pip install -U codecov
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -19,8 +18,6 @@ install:
 # Command to run tests, e.g. python setup.py test
 script:
   - tox
-  - coverage run --source ssl_certinfo -m pytest
-  - coverage report -m
 
 after_script:
   - coveralls
