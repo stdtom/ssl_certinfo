@@ -70,9 +70,7 @@ WUjbST4VXmdaol7uzFMojA4zkxQDZAvF5XgJlAFadfySna/teik=
         "valid_from": "2018-05-08T00:00:00",
         "valid_to": "2020-06-03T12:00:00",
     }
-    expected["expire_in_days"] = (
-        datetime.fromisoformat(expected["valid_to"]) - datetime.now()
-    ).days
+    expected["expire_in_days"] = (datetime(2020, 6, 3, 12, 0, 0) - datetime.now()).days
 
     cert_info = ssl_certinfo.get_cert_info(github_cert_obj)
 
