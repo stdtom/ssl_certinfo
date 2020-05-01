@@ -6,8 +6,10 @@ Use tox or py.test to run the test suite.
 """
 from datetime import datetime
 
+import pytest
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_pem_x509_certificate
+from cryptography.x509.oid import NameOID
 
 from ssl_certinfo import ssl_certinfo
 
@@ -76,3 +78,47 @@ WUjbST4VXmdaol7uzFMojA4zkxQDZAvF5XgJlAFadfySna/teik=
 
     assert cert_info["SAN"] == expected["SAN"]
     assert cert_info == expected
+
+
+@pytest.mark.parametrize(
+    "hostname,port,expected",
+    [
+        ("github.com", 443, "github.com"),
+        ("google.com", 443, "google.com"),
+        ("1.1.1.1", 443, "cloudflare"),
+        ("imap.gmail.com", 993, "gmail.com"),
+        ("pop.gmail.com", 995, "gmail.com"),
+    ],
+)
+def test_get_certificate_success(hostname, port, expected):
+    cert = ssl_certinfo.get_certificate(hostname, port)
+
+    assert cert
+    assert (
+        cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value.find(expected)
+        >= 0
+    )
+
+
+@pytest.mark.parametrize(
+    "hostname,port,comment",
+    [("localhost", 2, "connection rejected"), ("github.com", 2, "connection timeout")],
+)
+def test_get_certificate_fail(hostname, port, comment):
+    with pytest.raises((ConnectionRefusedError, OSError)):
+        assert ssl_certinfo.get_certificate(hostname, port, 5)
+
+
+@pytest.mark.skip
+@pytest.mark.parametrize("timeout", [2, 5, 8])
+def test_get_certificate_valid_timeout(timeout):
+    start = datetime.now()
+    try:
+        ssl_certinfo.get_certificate("github.com", 2, timeout)
+    except (ConnectionRefusedError, OSError):
+        pass
+    finally:
+        end = datetime.now()
+        delta = end - start
+
+        assert abs(delta.seconds - timeout) < 1

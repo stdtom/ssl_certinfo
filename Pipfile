@@ -19,6 +19,7 @@ black = "==19.10b0"
 isort = "*"
 
 [packages]
+pyopenssl = "*"
 
 [requires]
 python_version = "3.8"

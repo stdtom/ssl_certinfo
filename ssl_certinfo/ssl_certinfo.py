@@ -1,8 +1,10 @@
 """Main module."""
 from datetime import datetime
+from socket import socket
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
+from OpenSSL import SSL
 
 
 def get_cert_info(cert):
@@ -22,3 +24,26 @@ def get_cert_info(cert):
     certinfo["expire_in_days"] = delta.days
 
     return certinfo
+
+
+def get_certificate(hostname, port, timeout=5):
+    sock = socket()
+    sock.settimeout(timeout)
+    sock.connect((hostname, port))
+    sock.setblocking(True)
+
+    context = SSL.Context(SSL.SSLv23_METHOD)
+
+    context.check_hostname = False
+    context.verify_mode = SSL.VERIFY_NONE
+
+    sock_ssl = SSL.Connection(context, sock)
+    sock_ssl.set_connect_state()
+    sock_ssl.set_tlsext_host_name(hostname.encode())
+    sock_ssl.do_handshake()
+    cert = sock_ssl.get_peer_certificate()
+
+    sock_ssl.close()
+    sock.close()
+
+    return cert.to_cryptography()
