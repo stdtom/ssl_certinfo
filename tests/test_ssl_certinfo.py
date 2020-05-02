@@ -123,9 +123,10 @@ def test_get_certificate_valid_timeout(timeout):
 
 
 def test_process_hosts(capsys):
-    hosts = ["github.com"]
+    hosts = ["github.com", "wikipedia.org"]
     ssl_certinfo.process_hosts(hosts, 443)
 
     out, err = capsys.readouterr()
 
     assert out.find("github") >= 0
+    assert out.find("wikipedia") >= 0

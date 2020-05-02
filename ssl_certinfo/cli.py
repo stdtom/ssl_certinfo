@@ -48,7 +48,10 @@ def create_parser():
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose flag")
 
     parser.add_argument(
-        "host", type=check_hostname_or_ip_address, help="Connect to HOST[:PORT]"
+        "host",
+        nargs="*",
+        type=check_hostname_or_ip_address,
+        help="Connect to HOST[:PORT]",
     )
 
     parser.add_argument(
@@ -76,7 +79,7 @@ def main():
 
     print("Arguments: " + str(args))
 
-    ssl_certinfo.process_hosts([args.host], args.port, args.timeout)
+    ssl_certinfo.process_hosts(args.host, args.port, args.timeout)
     return 0
 
 

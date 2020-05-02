@@ -99,7 +99,7 @@ def test_cli_invalid_port(parser, args, comment):
 def test_cli_valid_host_or_ip(parser, args, expected, comment):
     """Sample pytest test function with the pytest fixture as an argument."""
     args = parser.parse_args(args)
-    assert args.host == expected
+    assert args.host == [expected]
 
 
 @pytest.mark.parametrize(
@@ -121,9 +121,18 @@ def capture(command):
     return out, err, proc.returncode
 
 
-def test_cli_main():
+def test_cli_main_single_target():
     command = "python3 -m ssl_certinfo github.com".split(" ")
     out, err, exitcode = capture(command)
     assert exitcode == 0
     assert out.decode().find("github") >= 0
+    assert err == b""
+
+
+def test_cli_main_two_targets():
+    command = "python3 -m ssl_certinfo github.com wikipedia.org".split(" ")
+    out, err, exitcode = capture(command)
+    assert exitcode == 0
+    assert out.decode().find("github") >= 0
+    assert out.decode().find("wikipedia") >= 0
     assert err == b""
