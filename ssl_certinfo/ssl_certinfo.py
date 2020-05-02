@@ -1,4 +1,5 @@
 """Main module."""
+import json
 from datetime import datetime
 from socket import socket
 
@@ -47,3 +48,15 @@ def get_certificate(hostname, port, timeout=5):
     sock.close()
 
     return cert.to_cryptography()
+
+
+def process_hosts(hosts, default_port, timeout=5):
+    results = []
+
+    for host in hosts:
+        cert = get_certificate(host, default_port, timeout)
+        certinfo = get_cert_info(cert)
+
+        results.append({"peername": host, "cert": certinfo})
+
+    print(json.dumps(results, indent=4))

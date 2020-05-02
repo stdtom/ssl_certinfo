@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from ssl_certinfo import validation
+from ssl_certinfo import ssl_certinfo, validation
 
 
 def check_hostname_or_ip_address(value):
@@ -75,7 +75,8 @@ def main():
     args = create_parser().parse_args()
 
     print("Arguments: " + str(args))
-    print("Replace this message by putting your code into ssl_certinfo.cli.main")
+
+    ssl_certinfo.process_hosts([args.host], args.port, args.timeout)
     return 0
 
 

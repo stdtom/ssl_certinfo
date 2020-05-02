@@ -5,6 +5,7 @@
 Use tox or py.test to run the test suite.
 """
 
+import subprocess
 from argparse import ArgumentTypeError
 
 import pytest
@@ -112,3 +113,17 @@ def test_cli_indvalid_host_or_ip(parser, args, comment):
     """Sample pytest test function with the pytest fixture as an argument."""
     with pytest.raises(SystemExit):
         args = parser.parse_args(args)
+
+
+def capture(command):
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
+    out, err = proc.communicate()
+    return out, err, proc.returncode
+
+
+def test_cli_main():
+    command = "python3 -m ssl_certinfo github.com".split(" ")
+    out, err, exitcode = capture(command)
+    assert exitcode == 0
+    assert out.decode().find("github") >= 0
+    assert err == b""
