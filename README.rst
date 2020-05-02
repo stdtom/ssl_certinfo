@@ -21,11 +21,11 @@ SSL CertInfo
    :target: https://travis-ci.com/stdtom/ssl_certinfo
    :alt: Travis Build Status
 
-.. |codacy| image:: https://api.codacy.com/project/badge/Grade/CODACY_ID
+.. |codacy| image:: https://api.codacy.com/project/badge/Grade/589c03a215ec4ddbb0085b523a857e55
    :target: https://www.codacy.com/manual/stdtom/ssl_certinfo
    :alt: Codacy Grade
 
-.. |codeclimate| image:: https://api.codeclimate.com/v1/badges/CODECLIMATE_ID/maintainability
+.. |codeclimate| image:: https://api.codeclimate.com/v1/badges/1ed86e874b3c68672c5c/maintainability
    :target: https://codeclimate.com/github/stdtom/ssl_certinfo/maintainability
    :alt: Code Climate Maintainability
 
@@ -45,7 +45,7 @@ SSL CertInfo
    :target: https://codecov.io/gh/stdtom/ssl_certinfo
    :alt: CodeCov
 
-.. |codeclimate-cov| image:: https://api.codeclimate.com/v1/badges/CODECLIMATE_ID/test_coverage
+.. |codeclimate-cov| image:: https://api.codeclimate.com/v1/badges/1ed86e874b3c68672c5c/test_coverage
    :target: https://codeclimate.com/github/stdtom/ssl_certinfo/test_coverage
    :alt: Code Climate Test Coverage
 
