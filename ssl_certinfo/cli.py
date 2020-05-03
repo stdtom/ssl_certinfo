@@ -1,5 +1,6 @@
 """Console script for ssl_certinfo."""
 import argparse
+import ipaddress
 import sys
 
 from ssl_certinfo import ssl_certinfo, validation
@@ -7,8 +8,10 @@ from ssl_certinfo import ssl_certinfo, validation
 
 def check_hostname_or_ip_address(value):
     """Validate argparse type hostname/ip address."""
-    if not validation.is_valid_hostname(value) and not validation.is_valid_ip_address(
-        value
+    if (
+        not validation.is_valid_hostname(value)
+        and not validation.is_valid_ip_address(value)
+        and not validation.is_valid_ip_network(value)
     ):
         raise argparse.ArgumentTypeError(
             "%s is not a valid hostname or ip address" % value
@@ -38,6 +41,24 @@ def check_valid_port(value):
     if ivalue <= 0 or ivalue > 65535:
         raise argparse.ArgumentTypeError("%s is an invalid port number" % value)
     return ivalue
+
+
+def expand_hosts(hostlist):
+    result = []
+
+    for elem in hostlist:
+        if validation.is_valid_hostname(elem) or validation.is_valid_ip_address(elem):
+            result.append(elem)
+        else:
+            try:
+                net = ipaddress.ip_network(elem, False)
+            except ValueError:
+                pass
+            else:
+                for ipaddr in net:
+                    result.append(str(ipaddr))
+
+    return result
 
 
 def create_parser():
@@ -79,7 +100,7 @@ def main():
 
     print("Arguments: " + str(args))
 
-    ssl_certinfo.process_hosts(args.host, args.port, args.timeout)
+    ssl_certinfo.process_hosts(expand_hosts(args.host), args.port, args.timeout)
     return 0
 
 

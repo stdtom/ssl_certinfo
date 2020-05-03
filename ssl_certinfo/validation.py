@@ -12,6 +12,19 @@ def is_valid_ip_address(value):
         return False
 
 
+def is_valid_ip_network(value):
+    """Validate if parameter is a valid ip network."""
+    try:
+        net = ipaddress.ip_network(value, False)
+    except ValueError:
+        return False
+    else:
+        if net.prefixlen < 32:
+            return True
+        else:
+            return False
+
+
 def is_valid_hostname(hostname):
     """Validate if parameter is a valid fqdn as defined in RFC-1035."""
     if hostname[-1] == ".":

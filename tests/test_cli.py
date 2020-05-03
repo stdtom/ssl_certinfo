@@ -90,6 +90,48 @@ def test_cli_invalid_port(parser, args, comment):
 
 
 @pytest.mark.parametrize(
+    "inlist,expected,comment",
+    [
+        (
+            "github.com 1.1.1.1".split(" "),
+            ["github.com", "1.1.1.1"],
+            "nothing to expand",
+        ),
+        (
+            "github.com 192.168.0.0/30 1.1.1.1".split(" "),
+            [
+                "github.com",
+                "192.168.0.0",
+                "192.168.0.1",
+                "192.168.0.2",
+                "192.168.0.3",
+                "1.1.1.1",
+            ],
+            "expand /30 network",
+        ),
+    ],
+)
+def test_expand_hosts(inlist, expected, comment):
+    out = cli.expand_hosts(inlist)
+    assert out == expected
+
+
+@pytest.mark.skip
+@pytest.mark.parametrize(
+    "inlist,expected,comment",
+    [
+        ("23.1.1.1/8".split(" "), 256 ^ 3, "expand class A network",),
+        ("130.80.0.0/16".split(" "), 65536, "expand class B network",),
+        ("192.168.0.0/24".split(" "), 256, "expand class C network",),
+        ("192.168.0.0/30".split(" "), 4, "expand /30 network",),
+    ],
+)
+def test_expand_hosts_large_networks(inlist, expected, comment):
+    out = cli.expand_hosts(inlist)
+    assert len(out) == expected
+
+
+@pytest.mark.parametrize(
     "args,expected,comment",
     [
         ("github.com".split(" "), ["github.com"], "valid host github.com"),
@@ -99,6 +141,7 @@ def test_cli_invalid_port(parser, args, comment):
             ["github.com", "1.1.1.1"],
             "two targets: valid hostname and ip address",
         ),
+        ("192.0.2.0/24".split(" "), ["192.0.2.0/24"], "valid ip network 192.0.2.0/24"),
     ],
 )
 def test_cli_valid_host_or_ip(parser, args, expected, comment):
