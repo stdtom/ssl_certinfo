@@ -120,7 +120,7 @@ def test_expand_hosts(inlist, expected, comment):
 @pytest.mark.parametrize(
     "inlist,expected,comment",
     [
-        ("23.1.1.1/8".split(" "), 256 ^ 3, "expand class A network",),
+        ("23.1.1.1/8".split(" "), 256 ** 3, "expand class A network",),
         ("130.80.0.0/16".split(" "), 65536, "expand class B network",),
         ("192.168.0.0/24".split(" "), 256, "expand class C network",),
         ("192.168.0.0/30".split(" "), 4, "expand /30 network",),
