@@ -92,14 +92,19 @@ def test_cli_invalid_port(parser, args, comment):
 @pytest.mark.parametrize(
     "args,expected,comment",
     [
-        (["github.com"], "github.com", "valid host github.com"),
-        (["1.1.1.1"], "1.1.1.1", "valid ip address 1.1.1.1"),
+        ("github.com".split(" "), ["github.com"], "valid host github.com"),
+        ("1.1.1.1".split(" "), ["1.1.1.1"], "valid ip address 1.1.1.1"),
+        (
+            "github.com 1.1.1.1".split(" "),
+            ["github.com", "1.1.1.1"],
+            "two targets: valid hostname and ip address",
+        ),
     ],
 )
 def test_cli_valid_host_or_ip(parser, args, expected, comment):
     """Sample pytest test function with the pytest fixture as an argument."""
     args = parser.parse_args(args)
-    assert args.host == [expected]
+    assert args.host == expected
 
 
 @pytest.mark.parametrize(
