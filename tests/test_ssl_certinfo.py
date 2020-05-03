@@ -4,6 +4,7 @@
 
 Use tox or py.test to run the test suite.
 """
+import os
 from datetime import datetime
 
 import pytest
@@ -107,7 +108,10 @@ def test_get_certificate_fail(hostname, port, comment):
         assert ssl_certinfo.get_certificate(hostname, port, 5)
 
 
-@pytest.mark.skip
+@pytest.mark.skipif(
+    ("TRAVIS" not in os.environ) or (os.environ["TRAVIS"] != "true"),
+    reason="Skip test if not running on travis-ci.com",
+)
 @pytest.mark.parametrize("timeout", [2, 5, 8])
 def test_get_certificate_valid_timeout(timeout):
     start = datetime.now()
