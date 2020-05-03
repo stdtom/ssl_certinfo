@@ -54,9 +54,13 @@ def process_hosts(hosts, default_port, timeout=5):
     results = []
 
     for host in hosts:
-        cert = get_certificate(host, default_port, timeout)
-        certinfo = get_cert_info(cert)
+        try:
+            cert = get_certificate(host, default_port, timeout)
+        except OSError:
+            pass
+        else:
+            certinfo = get_cert_info(cert)
 
-        results.append({"peername": host, "cert": certinfo})
+            results.append({"peername": host, "cert": certinfo})
 
     print(json.dumps(results, indent=4))

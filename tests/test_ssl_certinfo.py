@@ -130,3 +130,15 @@ def test_process_hosts(capsys):
 
     assert out.find("github") >= 0
     assert out.find("wikipedia") >= 0
+
+
+@pytest.mark.parametrize(
+    "hostname,port,comment",
+    [("localhost", 2, "connection rejected"), ("github.com", 2, "connection timeout")],
+)
+def test_process_hosts_timeout(capsys, hostname, port, comment):
+    ssl_certinfo.process_hosts([hostname], port)
+
+    out, err = capsys.readouterr()
+
+    assert out == "[]\n"
