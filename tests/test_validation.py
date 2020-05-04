@@ -41,6 +41,29 @@ def test_invalid_ip_network(test_input):
 
 
 @pytest.mark.parametrize(
+    "test_input", ["10.0.0.1 - 10.0.0.5", "192.168.0.1-192.168.1.255"]
+)
+def test_valid_ip_range(test_input):
+    assert validation.is_valid_ip_range(test_input)
+
+
+@pytest.mark.parametrize(
+    "test_input",
+    [
+        "10.0.0.1",  # single ip address, no range
+        "10.0.0.0/24",  # ip network in cidr
+        "10.0.0.5 - 10.0.0.1",  # start ip greater than end ip
+        "192.168.0.1-192.168.0.1",  # range of only one ip address
+        "10.0.0.1/32 - 10.0.0.5",  # start ip is cidr
+        "a.b.c - 1.1.1.1",  # start is not a valid ip
+        "abcde",  # characters
+    ],
+)
+def test_invalid_ip_range(test_input):
+    assert not validation.is_valid_ip_range(test_input)
+
+
+@pytest.mark.parametrize(
     "test_input",
     [
         "github.com",

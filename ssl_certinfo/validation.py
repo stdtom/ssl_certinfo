@@ -25,6 +25,22 @@ def is_valid_ip_network(value):
             return False
 
 
+def is_valid_ip_range(value):
+    """Validate if parameter is a valid ip address range."""
+    separator = re.compile(r" *- *")
+    try:
+        (start, end) = separator.split(value)
+        start_addr = ipaddress.ip_address(start)
+        end_addr = ipaddress.ip_address(end)
+    except ValueError:
+        return False
+    else:
+        if start_addr < end_addr:
+            return True
+        else:
+            return False
+
+
 def is_valid_hostname(hostname):
     """Validate if parameter is a valid fqdn as defined in RFC-1035."""
     if hostname[-1] == ".":

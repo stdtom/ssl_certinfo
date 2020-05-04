@@ -109,6 +109,20 @@ def test_cli_invalid_port(parser, args, comment):
             ],
             "expand /30 network",
         ),
+        (
+            ["github.com", "192.168.0.253 - 192.168.1.2", "1.1.1.1"],
+            [
+                "github.com",
+                "192.168.0.253",
+                "192.168.0.254",
+                "192.168.0.255",
+                "192.168.1.0",
+                "192.168.1.1",
+                "192.168.1.2",
+                "1.1.1.1",
+            ],
+            "expand ip range across subnet boundaries",
+        ),
     ],
 )
 def test_expand_hosts(inlist, expected, comment):
@@ -128,6 +142,7 @@ def test_expand_hosts(inlist, expected, comment):
         ("130.80.0.0/16".split(" "), 65536, "expand class B network",),
         ("192.168.0.0/24".split(" "), 256, "expand class C network",),
         ("192.168.0.0/30".split(" "), 4, "expand /30 network",),
+        ("192.168.0.0-192.168.1.255".split(" "), 512, "range of 2 class C networks",),
     ],
 )
 def test_expand_hosts_large_networks(inlist, expected, comment):
@@ -146,6 +161,11 @@ def test_expand_hosts_large_networks(inlist, expected, comment):
             "two targets: valid hostname and ip address",
         ),
         ("192.0.2.0/24".split(" "), ["192.0.2.0/24"], "valid ip network 192.0.2.0/24"),
+        (
+            "10.0.0.1-10.0.0.5".split(" "),
+            ["10.0.0.1-10.0.0.5"],
+            "valid ip range 10.0.0.1 - .5",
+        ),
     ],
 )
 def test_cli_valid_host_or_ip(parser, args, expected, comment):

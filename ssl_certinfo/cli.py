@@ -1,6 +1,7 @@
 """Console script for ssl_certinfo."""
 import argparse
 import ipaddress
+import re
 import sys
 
 from ssl_certinfo import ssl_certinfo, validation
@@ -12,6 +13,7 @@ def check_hostname_or_ip_address(value):
         not validation.is_valid_hostname(value)
         and not validation.is_valid_ip_address(value)
         and not validation.is_valid_ip_network(value)
+        and not validation.is_valid_ip_range(value)
     ):
         raise argparse.ArgumentTypeError(
             "%s is not a valid hostname or ip address" % value
@@ -49,6 +51,19 @@ def expand_hosts(hostlist):
     for elem in hostlist:
         if validation.is_valid_hostname(elem) or validation.is_valid_ip_address(elem):
             result.append(elem)
+        elif validation.is_valid_ip_range(elem):
+            separator = re.compile(r" *- *")
+            (start, end) = separator.split(elem)
+            try:
+                start_addr = ipaddress.ip_address(start)
+                end_addr = ipaddress.ip_address(end)
+            except ValueError:
+                pass
+            else:
+                current_ipaddr = start_addr
+                while current_ipaddr <= end_addr:
+                    result.append(str(current_ipaddr))
+                    current_ipaddr = current_ipaddr + 1
         else:
             try:
                 net = ipaddress.ip_network(elem, False)
