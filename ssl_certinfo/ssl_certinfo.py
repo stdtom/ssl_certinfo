@@ -1,5 +1,6 @@
 """Main module."""
 import json
+import logging
 from datetime import datetime
 from socket import socket
 
@@ -55,9 +56,10 @@ def process_hosts(hosts, default_port, timeout=5):
 
     for host in hosts:
         try:
+            logging.info("Trying to fetch certificate for " + host)
             cert = get_certificate(host, default_port, timeout)
         except OSError:
-            pass
+            logging.info("Could not fetch certificate for " + host)
         else:
             certinfo = get_cert_info(cert)
 

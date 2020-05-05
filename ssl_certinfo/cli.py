@@ -1,6 +1,7 @@
 """Console script for ssl_certinfo."""
 import argparse
 import ipaddress
+import logging
 import re
 import sys
 
@@ -60,6 +61,7 @@ def expand_hosts(hostlist):
             except ValueError:
                 pass
             else:
+                logging.debug("Expanding ip address range " + elem)
                 current_ipaddr = start_addr
                 while current_ipaddr <= end_addr:
                     result.append(str(current_ipaddr))
@@ -70,6 +72,7 @@ def expand_hosts(hostlist):
             except ValueError:
                 pass
             else:
+                logging.debug("Expanding ip network " + elem)
                 for ipaddr in net:
                     result.append(str(ipaddr))
 
@@ -81,7 +84,24 @@ def create_parser():
     parser = argparse.ArgumentParser(
         description="Collect information about SSL certificates from a set of hosts"
     )
-    parser.add_argument("-v", "--verbose", action="store_true", help="verbose flag")
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        dest="verbosity",
+        default=0,
+        help="verbose output (repeat for increased verbosity)",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_const",
+        const=-1,
+        default=0,
+        dest="verbosity",
+        help="quiet output (show errors only)",
+    )
 
     parser.add_argument(
         "host",
@@ -109,11 +129,19 @@ def create_parser():
     return parser
 
 
+def setup_logging(verbosity):
+    base_loglevel = 30
+    verbosity = min(verbosity, 2)
+    loglevel = base_loglevel - (verbosity * 10)
+    logging.basicConfig(level=loglevel, format="%(levelname)s\t%(message)s")
+
+
 def main():
     """Console script for ssl_certinfo."""
     args = create_parser().parse_args()
+    setup_logging(args.verbosity)
 
-    print("Arguments: " + str(args))
+    logging.info("Arguments: " + str(args))
 
     ssl_certinfo.process_hosts(expand_hosts(args.host), args.port, args.timeout)
     return 0
