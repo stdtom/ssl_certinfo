@@ -7,6 +7,7 @@ from socket import socket
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from OpenSSL import SSL
+from tqdm import tqdm
 
 
 def get_cert_info(cert):
@@ -54,7 +55,10 @@ def get_certificate(hostname, port, timeout=5):
 def process_hosts(hosts, default_port, timeout=5):
     results = []
 
-    for host in hosts:
+    progbar = tqdm(hosts)
+
+    for host in progbar:
+        progbar.set_description(f"Checking {host}...")
         try:
             logging.info("Trying to fetch certificate for " + host)
             cert = get_certificate(host, default_port, timeout)

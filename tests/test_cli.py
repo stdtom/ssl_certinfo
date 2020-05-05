@@ -198,7 +198,7 @@ def test_cli_main_single_target():
     out, err, exitcode = capture(command)
     assert exitcode == 0
     assert out.decode().find("github") >= 0
-    assert err == b""
+    assert (err == b"") or (err.decode().find("100%") >= 0)
 
 
 def test_cli_main_two_targets():
@@ -207,4 +207,4 @@ def test_cli_main_two_targets():
     assert exitcode == 0
     assert out.decode().find("github") >= 0
     assert out.decode().find("wikipedia") >= 0
-    assert err == b""
+    assert (err == b"") or (err.decode().find("100%") >= 0)
