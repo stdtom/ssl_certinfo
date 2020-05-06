@@ -62,7 +62,7 @@ def process_hosts(hosts, default_port, timeout=5):
         try:
             logging.info("Trying to fetch certificate for " + host)
             cert = get_certificate(host, default_port, timeout)
-        except OSError:
+        except (OSError, SSL.Error):
             logging.info("Could not fetch certificate for " + host)
         else:
             certinfo = get_cert_info(cert)

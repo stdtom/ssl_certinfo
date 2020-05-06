@@ -11,6 +11,7 @@ import pytest
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.oid import NameOID
+from OpenSSL import SSL
 
 from ssl_certinfo import ssl_certinfo
 
@@ -101,10 +102,14 @@ def test_get_certificate_success(hostname, port, expected):
 
 @pytest.mark.parametrize(
     "hostname,port,comment",
-    [("localhost", 2, "connection rejected"), ("github.com", 2, "connection timeout")],
+    [
+        ("localhost", 2, "connection rejected"),
+        ("github.com", 2, "connection timeout"),
+        ("github.com", 80, "no ssl on target port"),
+    ],
 )
 def test_get_certificate_fail(hostname, port, comment):
-    with pytest.raises((ConnectionRefusedError, OSError)):
+    with pytest.raises((ConnectionRefusedError, OSError, SSL.Error)):
         assert ssl_certinfo.get_certificate(hostname, port, 5)
 
 
@@ -138,7 +143,11 @@ def test_process_hosts(capsys):
 
 @pytest.mark.parametrize(
     "hostname,port,comment",
-    [("localhost", 2, "connection rejected"), ("github.com", 2, "connection timeout")],
+    [
+        ("localhost", 2, "connection rejected"),
+        ("github.com", 2, "connection timeout"),
+        ("github.com", 80, "no ssl on target port"),
+    ],
 )
 def test_process_hosts_timeout(capsys, hostname, port, comment):
     ssl_certinfo.process_hosts([hostname], port)
