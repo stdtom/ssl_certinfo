@@ -27,10 +27,10 @@ def check_positive(value):
     try:
         ivalue = int(value)
     except ValueError:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+        raise argparse.ArgumentTypeError("%s is not an int value" % value)
 
     if ivalue <= 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+        raise argparse.ArgumentTypeError("%s is not a positive int value" % value)
     return ivalue
 
 
@@ -39,7 +39,7 @@ def check_valid_port(value):
     try:
         ivalue = int(value)
     except ValueError:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+        raise argparse.ArgumentTypeError("%s is an invalid port number" % value)
 
     if ivalue <= 0 or ivalue > 65535:
         raise argparse.ArgumentTypeError("%s is an invalid port number" % value)
