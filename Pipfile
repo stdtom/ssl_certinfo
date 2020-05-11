@@ -17,6 +17,7 @@ pytest = "*"
 pytest-runner = "*"
 black = "==19.10b0"
 isort = "*"
+pytest-timeout = "*"
 
 [packages]
 pyopenssl = "*"

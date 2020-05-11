@@ -1,12 +1,14 @@
 """Main module."""
 import json
 import logging
+import time
 from datetime import datetime
 from socket import socket
 
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from OpenSSL import SSL
+from OpenSSL.SSL import WantReadError, WantWriteError
 from tqdm import tqdm
 
 
@@ -29,11 +31,22 @@ def get_cert_info(cert):
     return certinfo
 
 
+def ssl_handshake_helper(sock_ssl):
+    timeout = sock_ssl.gettimeout()
+    if timeout is not None:
+        start = time.time()
+    while True:
+        try:
+            return sock_ssl.do_handshake()
+        except (WantReadError, WantWriteError):
+            if start + timeout <= time.time():
+                raise TimeoutError
+
+
 def get_certificate(hostname, port, timeout=5):
     sock = socket()
     sock.settimeout(timeout)
     sock.connect((hostname, port))
-    sock.setblocking(True)
 
     context = SSL.Context(SSL.SSLv23_METHOD)
 
@@ -43,7 +56,7 @@ def get_certificate(hostname, port, timeout=5):
     sock_ssl = SSL.Connection(context, sock)
     sock_ssl.set_connect_state()
     sock_ssl.set_tlsext_host_name(hostname.encode())
-    sock_ssl.do_handshake()
+    ssl_handshake_helper(sock_ssl)
     cert = sock_ssl.get_peer_certificate()
 
     sock_ssl.close()
