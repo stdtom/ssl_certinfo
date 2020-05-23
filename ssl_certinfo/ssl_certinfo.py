@@ -1,15 +1,22 @@
 """Main module."""
+import enum
 import json
 import logging
 import time
 from datetime import datetime
 from socket import socket
 
+import yaml
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 from OpenSSL import SSL
 from OpenSSL.SSL import WantReadError, WantWriteError
 from tqdm import tqdm
+
+
+class OutputFormat(enum.Enum):
+    JSON = 1
+    YAML = 2
 
 
 def get_cert_info(cert):
@@ -65,8 +72,8 @@ def get_certificate(hostname, port, timeout=5):
     return cert.to_cryptography()
 
 
-def process_hosts(hosts, default_port, timeout=5):
-    results = []
+def process_hosts(hosts, default_port, timeout=5, outform=OutputFormat.JSON):
+    results = {}
 
     progbar = tqdm(hosts)
 
@@ -79,7 +86,13 @@ def process_hosts(hosts, default_port, timeout=5):
             logging.info("Could not fetch certificate for " + host)
         else:
             certinfo = get_cert_info(cert)
+            certinfo["peername"] = host
+            certinfo["peerport"] = default_port
 
-            results.append({"peername": host, "cert": certinfo})
+            results[host] = certinfo
 
-    print(json.dumps(results, indent=4))
+    if outform == OutputFormat.JSON:
+        print(json.dumps(results, indent=4))
+
+    elif outform == OutputFormat.YAML:
+        print(yaml.dump(results))

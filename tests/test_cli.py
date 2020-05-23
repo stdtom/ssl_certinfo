@@ -11,6 +11,7 @@ from argparse import ArgumentTypeError
 import pytest
 
 from ssl_certinfo import cli
+from ssl_certinfo.ssl_certinfo import OutputFormat
 
 
 @pytest.fixture
@@ -185,6 +186,22 @@ def test_cli_indvalid_host_or_ip(parser, args, comment):
     """Sample pytest test function with the pytest fixture as an argument."""
     with pytest.raises(SystemExit):
         args = parser.parse_args(args)
+
+
+@pytest.mark.parametrize(
+    "args,expected,comment",
+    [
+        ("github.com".split(), OutputFormat.JSON, "default"),
+        ("github.com --json".split(), OutputFormat.JSON, "JSON"),
+        ("github.com -j".split(), OutputFormat.JSON, "JSON"),
+        ("github.com --yaml".split(), OutputFormat.YAML, "YAML"),
+        ("github.com -y".split(), OutputFormat.YAML, "YAML"),
+    ],
+)
+def test_cli_outform(parser, args, expected, comment):
+    """Sample pytest test function with the pytest fixture as an argument."""
+    args = parser.parse_args(args)
+    assert args.outform == expected
 
 
 def capture(command):

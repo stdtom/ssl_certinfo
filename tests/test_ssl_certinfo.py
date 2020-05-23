@@ -204,4 +204,4 @@ def test_process_hosts_timeout(capsys, hostname, port, comment):
 
     out, err = capsys.readouterr()
 
-    assert out == "[]\n"
+    assert out == "{}\n"

@@ -6,6 +6,7 @@ import re
 import sys
 
 from ssl_certinfo import ssl_certinfo, validation
+from ssl_certinfo.ssl_certinfo import OutputFormat
 
 
 def check_hostname_or_ip_address(value):
@@ -127,6 +128,26 @@ def create_parser():
         help="Maximum time allowed for connection",
     )
 
+    output_format = parser.add_mutually_exclusive_group()
+    output_format.add_argument(
+        "-j",
+        "--json",
+        action="store_const",
+        const=OutputFormat.JSON,
+        default=OutputFormat.JSON,
+        dest="outform",
+        help="Print results in JSON format",
+    )
+    output_format.add_argument(
+        "-y",
+        "--yaml",
+        action="store_const",
+        const=OutputFormat.YAML,
+        default=OutputFormat.JSON,
+        dest="outform",
+        help="Print results in YAML format",
+    )
+
     return parser
 
 
@@ -144,7 +165,9 @@ def main():
 
     logging.info("Arguments: " + str(args))
 
-    ssl_certinfo.process_hosts(expand_hosts(args.host), args.port, args.timeout)
+    ssl_certinfo.process_hosts(
+        expand_hosts(args.host), args.port, args.timeout, args.outform
+    )
     return 0
 
 
