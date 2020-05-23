@@ -85,7 +85,8 @@ def create_parser():
         description="Collect information about SSL certificates from a set of hosts"
     )
 
-    parser.add_argument(
+    verb_group = parser.add_mutually_exclusive_group()
+    verb_group.add_argument(
         "-v",
         "--verbose",
         action="count",
@@ -93,7 +94,7 @@ def create_parser():
         default=0,
         help="verbose output (repeat for increased verbosity)",
     )
-    parser.add_argument(
+    verb_group.add_argument(
         "-q",
         "--quiet",
         action="store_const",
