@@ -4,14 +4,58 @@
 
 Use tox or py.test to run the test suite.
 """
+import os
+import socket
+import threading
+import time
 from datetime import datetime
 
 import pytest
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.x509.oid import NameOID
+from OpenSSL import SSL
 
 from ssl_certinfo import ssl_certinfo
+
+global_sock = None
+
+
+def start_tcp_server(port):
+    global global_sock
+    HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((HOST, port))
+        s.listen()
+        global_sock = s
+
+        while True:
+            conn, addr = s.accept()
+            with conn:
+                while True:
+                    data = conn.recv(1024)
+                    if not data:
+                        break
+                conn.close()
+
+
+def setup_module(module):
+    port = 12345
+    daemon = threading.Thread(
+        name="daemon_server", target=start_tcp_server, args=[port]
+    )
+    daemon.setDaemon(
+        True
+    )  # Set as a daemon so it will be killed once the main thread is dead.
+    daemon.start()
+
+    time.sleep(5)
+
+
+def teardown_module(module):
+    global_sock.shutdown(socket.SHUT_RDWR)
+    global_sock.close()
 
 
 def test_get_cert_info():
@@ -98,16 +142,27 @@ def test_get_certificate_success(hostname, port, expected):
     )
 
 
+@pytest.mark.timeout(15)
 @pytest.mark.parametrize(
     "hostname,port,comment",
-    [("localhost", 2, "connection rejected"), ("github.com", 2, "connection timeout")],
+    [
+        ("localhost", 2, "connection rejected"),
+        ("github.com", 2, "connection timeout"),
+        ("github.com", 80, "no ssl on target port"),
+        pytest.param(
+            "localhost", 12345, "timeout on ssl handshake"  # , marks=pytest.mark.xfail
+        ),
+    ],
 )
 def test_get_certificate_fail(hostname, port, comment):
-    with pytest.raises((ConnectionRefusedError, OSError)):
+    with pytest.raises((ConnectionRefusedError, OSError, SSL.Error)):
         assert ssl_certinfo.get_certificate(hostname, port, 5)
 
 
-@pytest.mark.skip
+@pytest.mark.skipif(
+    ("TRAVIS" not in os.environ) or (os.environ["TRAVIS"] != "true"),
+    reason="Skip test if not running on travis-ci.com",
+)
 @pytest.mark.parametrize("timeout", [2, 5, 8])
 def test_get_certificate_valid_timeout(timeout):
     start = datetime.now()
@@ -123,9 +178,30 @@ def test_get_certificate_valid_timeout(timeout):
 
 
 def test_process_hosts(capsys):
-    hosts = ["github.com"]
+    hosts = ["github.com", "wikipedia.org"]
     ssl_certinfo.process_hosts(hosts, 443)
 
     out, err = capsys.readouterr()
 
     assert out.find("github") >= 0
+    assert out.find("wikipedia") >= 0
+
+
+@pytest.mark.timeout(15)
+@pytest.mark.parametrize(
+    "hostname,port,comment",
+    [
+        ("localhost", 2, "connection rejected"),
+        ("github.com", 2, "connection timeout"),
+        ("github.com", 80, "no ssl on target port"),
+        pytest.param(
+            "localhost", 12345, "timeout on ssl handshake"  # , marks=pytest.mark.xfail
+        ),
+    ],
+)
+def test_process_hosts_timeout(capsys, hostname, port, comment):
+    ssl_certinfo.process_hosts([hostname], port)
+
+    out, err = capsys.readouterr()
+
+    assert out == "{}\n"

@@ -17,9 +17,11 @@ pytest = "*"
 pytest-runner = "*"
 black = "==19.10b0"
 isort = "*"
+pytest-timeout = "*"
 
 [packages]
 pyopenssl = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.8"
