@@ -23,14 +23,13 @@ test_requirements = [
 setup(
     author="StdTom",
     author_email="stdtom@gmx.net",
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
@@ -50,6 +49,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/stdtom/ssl_certinfo",
-    version="version='0.3.0'",
+    version="0.3.0",
     zip_safe=False,
 )
