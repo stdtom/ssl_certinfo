@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "ssl_certinfo"
-version = "0.3.0"
+version = "0.3.2"
 description = "SSL CertInfo collects information about SSL certificates from a set of hosts."
 authors = ["StdTom <stdtom@gmx.net>"]
 license = "Apache Software License 2.0"
