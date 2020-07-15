@@ -26,7 +26,7 @@ after_script:
   - ~/cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 before-deploy:
-  - poetry config http-basic.mypypi $MYPYPI_USER $MYPYPI_PASS
+  - poetry config http-basic.pypi $MYPYPI_USER $MYPYPI_PASS
   - poetry build
 
 deploy:
