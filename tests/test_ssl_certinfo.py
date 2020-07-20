@@ -54,7 +54,10 @@ def setup_module(module):
 
 
 def teardown_module(module):
-    global_sock.shutdown(socket.SHUT_RDWR)
+    try:
+        global_sock.shutdown(socket.SHUT_RDWR)
+    except (socket.error, OSError, ValueError):
+        pass
     global_sock.close()
 
 

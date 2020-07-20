@@ -211,7 +211,7 @@ def capture(command):
 
 
 def test_cli_main_single_target():
-    command = "python3 -m ssl_certinfo github.com".split(" ")
+    command = "python -m ssl_certinfo github.com".split(" ")
     out, err, exitcode = capture(command)
     assert exitcode == 0
     assert out.decode().find("github") >= 0
@@ -219,7 +219,7 @@ def test_cli_main_single_target():
 
 
 def test_cli_main_two_targets():
-    command = "python3 -m ssl_certinfo github.com wikipedia.org".split(" ")
+    command = "python -m ssl_certinfo github.com wikipedia.org".split(" ")
     out, err, exitcode = capture(command)
     assert exitcode == 0
     assert out.decode().find("github") >= 0
