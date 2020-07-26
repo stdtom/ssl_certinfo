@@ -81,11 +81,12 @@ docs: ## generate Sphinx HTML documentation, including API docs
 servedocs: docs ## compile the docs watching for changes
 	poetry run watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-release: dist ## package and upload a release
+release: dist ## package and upload a release to PyPI
 	poetry publish
 
-dist: clean ## builds source and wheel package
+dist: clean ## builds source and wheel package as well as stand-alone executable
 	poetry build
+	poetry run pyinstaller ssl_certinfo/cli.py -n ssl_certinfo --onefile
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages

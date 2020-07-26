@@ -42,6 +42,8 @@ tox = "*"
 twine = "*"
 watchdog = "*"
 wheel = "*"
+pyinstaller = "*"
+pefile = "*"
 
 [tool.poetry.scripts]
 ssl_certinfo = "ssl_certinfo.cli:main"
