@@ -5,8 +5,14 @@ import logging
 import re
 import sys
 
-from ssl_certinfo import ssl_certinfo, validation
+from ssl_certinfo import __author__, __email__, __version__, ssl_certinfo, validation
 from ssl_certinfo.ssl_certinfo import OutputFormat
+
+VERSION = rf"""
+ssl_certinfo {__version__}
+Copyright (C) 2020 {__author__} ({__email__})
+License Apache-2.0: <http://www.apache.org/licenses/LICENSE-2.0>.
+"""
 
 
 def check_hostname_or_ip_address(value):
@@ -86,6 +92,14 @@ def create_parser():
         description="Collect information about SSL certificates from a set of hosts"
     )
 
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="store_true",
+        dest="displayVersion",
+        help="display version information and exit",
+    )
+
     verb_group = parser.add_mutually_exclusive_group()
     verb_group.add_argument(
         "-v",
@@ -161,6 +175,10 @@ def setup_logging(verbosity):
 def main():
     """Console script for ssl_certinfo."""
     args = create_parser().parse_args()
+    if args.displayVersion:
+        print(VERSION)
+        return 0
+
     setup_logging(args.verbosity)
 
     logging.info("Arguments: " + str(args))

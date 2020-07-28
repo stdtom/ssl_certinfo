@@ -10,7 +10,7 @@ from argparse import ArgumentTypeError
 
 import pytest
 
-from ssl_certinfo import cli
+from ssl_certinfo import __author__, __email__, __version__, cli
 from ssl_certinfo.ssl_certinfo import OutputFormat
 
 
@@ -208,6 +208,15 @@ def capture(command):
     proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
     out, err = proc.communicate()
     return out, err, proc.returncode
+
+
+def test_cli_main_version():
+    command = "python -m ssl_certinfo -V".split(" ")
+    out, err, exitcode = capture(command)
+    assert exitcode == 0
+    assert out.decode().find(__version__) >= 0
+    assert out.decode().find(__author__) >= 0
+    assert out.decode().find(__email__) >= 0
 
 
 def test_cli_main_single_target():
