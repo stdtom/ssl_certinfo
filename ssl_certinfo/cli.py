@@ -144,11 +144,20 @@ def create_parser():
 
     output_format = parser.add_mutually_exclusive_group()
     output_format.add_argument(
+        "-T",
+        "--table",
+        action="store_const",
+        const=OutputFormat.TABLE,
+        default=OutputFormat.TABLE,
+        dest="outform",
+        help="Print results in table format",
+    )
+    output_format.add_argument(
         "-j",
         "--json",
         action="store_const",
         const=OutputFormat.JSON,
-        default=OutputFormat.JSON,
+        default=OutputFormat.TABLE,
         dest="outform",
         help="Print results in JSON format",
     )
@@ -157,9 +166,27 @@ def create_parser():
         "--yaml",
         action="store_const",
         const=OutputFormat.YAML,
-        default=OutputFormat.JSON,
+        default=OutputFormat.TABLE,
         dest="outform",
         help="Print results in YAML format",
+    )
+    output_format.add_argument(
+        "-c",
+        "--csv",
+        action="store_const",
+        const=OutputFormat.CSV,
+        default=OutputFormat.TABLE,
+        dest="outform",
+        help="Print results in CSV format",
+    )
+    output_format.add_argument(
+        "-r",
+        "--raw",
+        action="store_const",
+        const=OutputFormat.RAW,
+        default=OutputFormat.TABLE,
+        dest="outform",
+        help="Print results in raw format",
     )
 
     return parser

@@ -26,6 +26,8 @@ python = "^3.6"
 pyopenssl = "*"
 pyyaml = "*"
 tqdm = "*"
+pandas = "*"
+tabulate = "*"
 
 [tool.poetry.dev-dependencies]
 black = "==19.10b0"

@@ -191,11 +191,17 @@ def test_cli_indvalid_host_or_ip(parser, args, comment):
 @pytest.mark.parametrize(
     "args,expected,comment",
     [
-        ("github.com".split(), OutputFormat.JSON, "default"),
+        ("github.com".split(), OutputFormat.TABLE, "default"),
+        ("github.com --table".split(), OutputFormat.TABLE, "TABLE"),
+        ("github.com -T".split(), OutputFormat.TABLE, "TABLE"),
         ("github.com --json".split(), OutputFormat.JSON, "JSON"),
         ("github.com -j".split(), OutputFormat.JSON, "JSON"),
         ("github.com --yaml".split(), OutputFormat.YAML, "YAML"),
         ("github.com -y".split(), OutputFormat.YAML, "YAML"),
+        ("github.com --csv".split(), OutputFormat.CSV, "CSV"),
+        ("github.com -c".split(), OutputFormat.CSV, "CSV"),
+        ("github.com --raw".split(), OutputFormat.RAW, "RAW"),
+        ("github.com -r".split(), OutputFormat.RAW, "RAW"),
     ],
 )
 def test_cli_outform(parser, args, expected, comment):
