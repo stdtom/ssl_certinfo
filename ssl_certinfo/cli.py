@@ -120,10 +120,7 @@ def create_parser():
     )
 
     parser.add_argument(
-        "host",
-        nargs="*",
-        type=check_hostname_or_ip_address,
-        help="Connect to HOST[:PORT]",
+        "host", nargs="*", type=check_hostname_or_ip_address, help="Connect to HOST",
     )
 
     parser.add_argument(
@@ -131,7 +128,7 @@ def create_parser():
         "--port",
         default=443,
         type=check_valid_port,
-        help="Default TCP port to connnect to [0-65535]",
+        help="TCP port to connnect to [0-65535]",
     )
 
     parser.add_argument(
