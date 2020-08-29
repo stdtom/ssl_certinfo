@@ -2,7 +2,5 @@
 History
 =======
 
-0.1.0 (2020-04-23)
-------------------
 
-* First release on PyPI.
+see `CHANGELOG.md <./CHANGELOG.md>`_

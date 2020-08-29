@@ -10,7 +10,7 @@ from argparse import ArgumentTypeError
 
 import pytest
 
-from ssl_certinfo import cli
+from ssl_certinfo import __author__, __email__, __version__, cli
 from ssl_certinfo.ssl_certinfo import OutputFormat
 
 
@@ -191,11 +191,17 @@ def test_cli_indvalid_host_or_ip(parser, args, comment):
 @pytest.mark.parametrize(
     "args,expected,comment",
     [
-        ("github.com".split(), OutputFormat.JSON, "default"),
+        ("github.com".split(), OutputFormat.TABLE, "default"),
+        ("github.com --table".split(), OutputFormat.TABLE, "TABLE"),
+        ("github.com -T".split(), OutputFormat.TABLE, "TABLE"),
         ("github.com --json".split(), OutputFormat.JSON, "JSON"),
         ("github.com -j".split(), OutputFormat.JSON, "JSON"),
         ("github.com --yaml".split(), OutputFormat.YAML, "YAML"),
         ("github.com -y".split(), OutputFormat.YAML, "YAML"),
+        ("github.com --csv".split(), OutputFormat.CSV, "CSV"),
+        ("github.com -c".split(), OutputFormat.CSV, "CSV"),
+        ("github.com --raw".split(), OutputFormat.RAW, "RAW"),
+        ("github.com -r".split(), OutputFormat.RAW, "RAW"),
     ],
 )
 def test_cli_outform(parser, args, expected, comment):
@@ -210,8 +216,17 @@ def capture(command):
     return out, err, proc.returncode
 
 
+def test_cli_main_version():
+    command = "python -m ssl_certinfo -V".split(" ")
+    out, err, exitcode = capture(command)
+    assert exitcode == 0
+    assert out.decode().find(__version__) >= 0
+    assert out.decode().find(__author__) >= 0
+    assert out.decode().find(__email__) >= 0
+
+
 def test_cli_main_single_target():
-    command = "python3 -m ssl_certinfo github.com".split(" ")
+    command = "python -m ssl_certinfo github.com".split(" ")
     out, err, exitcode = capture(command)
     assert exitcode == 0
     assert out.decode().find("github") >= 0
@@ -219,7 +234,7 @@ def test_cli_main_single_target():
 
 
 def test_cli_main_two_targets():
-    command = "python3 -m ssl_certinfo github.com wikipedia.org".split(" ")
+    command = "python -m ssl_certinfo github.com wikipedia.org".split(" ")
     out, err, exitcode = capture(command)
     assert exitcode == 0
     assert out.decode().find("github") >= 0

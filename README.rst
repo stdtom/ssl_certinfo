@@ -15,9 +15,11 @@ SSL CertInfo
       - |coveralls| |codecov| |codeclimate-cov|
     * - dependencies
       - |pyup| |pyup-p3| |requires|
+    * - package
+      - |version| |pyversions| |downloads|
 
 
-.. |travis| image:: https://api.travis-ci.com/stdtom/ssl_certinfo.svg
+.. |travis| image:: https://img.shields.io/travis/stdtom/ssl_certinfo/master.svg?logo=travis
    :target: https://travis-ci.com/stdtom/ssl_certinfo
    :alt: Travis Build Status
 
@@ -61,22 +63,85 @@ SSL CertInfo
    :target: https://requires.io/github/stdtom/ssl_certinfo/requirements/?branch=master
    :alt: Requirements Status
 
+.. |version| image:: https://img.shields.io/pypi/v/ssl-certinfo.svg
+   :target: https://pypi.org/project/ssl-certinfo/
+   :alt: Version
+
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/ssl-certinfo.svg?logo=python&logoColor=FBE072
+    :target: https://pypi.org/project/ssl-certinfo/
+    :alt: Python versions supported
+
+.. |downloads| image:: https://pepy.tech/badge/ssl-certinfo
+    :target: https://pepy.tech/project/ssl-certinfo
+    :alt: PyPI downloads
+
 .. end-badges
-
-
 
 
 SSL CertInfo collects information about SSL certificates from a set of hosts.
 
 
-* Free software: Apache Software License 2.0
-* Documentation: https://ssl-certinfo.readthedocs.io.
-
-
 Features
 --------
 
-* TODO
+* Hosts to be scanned can be specified as a list of
+
+  * hostnames (fully qualified domain names), e.g. ``github.com``,
+  * ip addresses, e.g. ``1.1.1.1``,
+  * ip networks in CIDR format, e.g. ``10.0.0.0/24``,
+  * ip ranges, e.g. ``10.0.0.1-10.0.0.10``,
+  * or any combination of the previous.
+
+* Results will be presented in various output formats: ``--table``, ``--json``, ``--yaml``, ``--csv``, ``--raw``.
+
+
+Installation
+------------
+You can download and install the latest version of this software from the Python package index (PyPI) as follows::
+
+  $ pip install ssl_certinfo
+
+
+Usage
+-----
+
+When you install ssl_certinfo, a command-line script called ``ssl_certinfo`` is
+placed on your path. You can invoke ssl_certinfo directly via this script from the command line::
+
+  $ ssl_certinfo [...]
+
+
+You can also invoke it through the Python interpreter from the command line::
+
+  $ python -m ssl_certinfo [...]
+
+
+Help is available with the ``--help`` or ``-h`` switch::
+
+  $ ssl_certinfo -h
+  usage: ssl_certinfo [-h] [-V] [-v | -q] [-p PORT] [-t TIMEOUT] [-T | -j | -y | -c | -r] [host [host ...]]
+
+  Collect information about SSL certificates from a set of hosts
+
+  positional arguments:
+  host                  Connect to HOST
+
+  optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version         display version information and exit
+  -v, --verbose         verbose output (repeat for increased verbosity)
+  -q, --quiet           quiet output (show errors only)
+  -p PORT, --port PORT  TCP port to connnect to [0-65535]
+  -t TIMEOUT, --timeout TIMEOUT
+                        Maximum time allowed for connection
+  -T, --table           Print results in table format
+  -j, --json            Print results in JSON format
+  -y, --yaml            Print results in YAML format
+  -c, --csv             Print results in CSV format
+  -r, --raw             Print results in raw format
+
+
+
 
 Credits
 -------

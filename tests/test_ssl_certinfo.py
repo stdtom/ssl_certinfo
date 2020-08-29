@@ -5,6 +5,7 @@
 Use tox or py.test to run the test suite.
 """
 import os
+import re
 import socket
 import threading
 import time
@@ -17,6 +18,7 @@ from cryptography.x509.oid import NameOID
 from OpenSSL import SSL
 
 from ssl_certinfo import ssl_certinfo
+from ssl_certinfo.ssl_certinfo import OutputFormat
 
 global_sock = None
 
@@ -54,8 +56,26 @@ def setup_module(module):
 
 
 def teardown_module(module):
-    global_sock.shutdown(socket.SHUT_RDWR)
+    try:
+        global_sock.shutdown(socket.SHUT_RDWR)
+    except (socket.error, OSError, ValueError):
+        pass
     global_sock.close()
+
+
+@pytest.fixture
+def sample_result():
+    certinfo = {
+        "CN": "github.com",
+        "SAN": "github.com;www.github.com",
+        "valid_from": "2018-05-08T00:00:00",
+        "valid_to": "2020-06-03T12:00:00",
+        "expire_in_days": (datetime(2020, 6, 3, 12, 0, 0) - datetime.now()).days,
+        "peername": "github.com",
+        "peerport": 443,
+    }
+
+    return {"github.com": certinfo}
 
 
 def test_get_cert_info():
@@ -204,4 +224,78 @@ def test_process_hosts_timeout(capsys, hostname, port, comment):
 
     out, err = capsys.readouterr()
 
-    assert out == "{}\n"
+    assert out == "\n"
+
+
+@pytest.mark.parametrize(
+    "outform,expected",
+    [
+        (
+            OutputFormat.TABLE,
+            r"\+-[\+-]+-\+(\r)?\n"
+            r"\| +peer +\| +CN +\| +SAN +\| +valid_from +\| +valid_to +\| +"
+            r"expire_in_days +\| +peername +\| +peerport +\|(\r)?\n"
+            r"\+-[\+-]+-\+(\r)?\n"
+            r"\| +github.com +\| +github.com +\| +github.com;www.github.com +\| +"
+            r"2018-05-08T00:00:00 +\| +"
+            r"2020-06-03T12:00:00 +\| +-?[0-9]+ +\| +github.com +\| +443 +\|(\r)?\n"
+            r"\+-[\+-]+-\+",
+        ),
+        (
+            OutputFormat.JSON,
+            "{(\r)?\n"
+            ' +"github.com": {(\r)?\n'
+            ' +"CN": "github.com",(\r)?\n'
+            ' +"SAN": "github.com;www.github.com",(\r)?\n'
+            ' +"valid_from": "2018-05-08T00:00:00",(\r)?\n'
+            ' +"valid_to": "2020-06-03T12:00:00",(\r)?\n'
+            ' +"expire_in_days": -?[0-9]+,(\r)?\n'
+            ' +"peername": "github.com",(\r)?\n'
+            ' +"peerport": 443(\r)?\n'
+            " +}(\r)?\n"
+            "}",
+        ),
+        (
+            OutputFormat.YAML,
+            "github.com:(\r)?\n"
+            "  CN: github.com(\r)?\n"
+            "  SAN: github.com;www.github.com(\r)?\n"
+            "  expire_in_days: -?[0-9]+(\r)?\n"
+            "  peername: github.com(\r)?\n"
+            "  peerport: 443(\r)?\n"
+            "  valid_from: '2018-05-08T00:00:00'(\r)?\n"
+            "  valid_to: '2020-06-03T12:00:00'(\r)?\n",
+        ),
+        (
+            OutputFormat.CSV,
+            "peer,CN,SAN,valid_from,valid_to,expire_in_days,peername,peerport(\r)?\n"
+            "github.com,github.com,github.com;www.github.com,2018-05-08T00:00:00,"
+            "2020-06-03T12:00:00,-?[0-9]+,github.com,443",
+        ),
+        (
+            OutputFormat.RAW,
+            "peer +CN +SAN +valid_from +valid_to +expire_in_days +peername +peerport"
+            "(\r)?\n"
+            "github.com +github.com +github.com;www.github.com +2018-05-08T00:00:00 +"
+            "2020-06-03T12:00:00 +-?[0-9]+ +github.com +443",
+        ),
+    ],
+)
+def test_format_results(sample_result, outform, expected):
+    outstr = ssl_certinfo.format_results(sample_result, outform)
+    assert re.match(expected, outstr)
+
+
+@pytest.mark.parametrize(
+    "outform,expected",
+    [
+        (OutputFormat.TABLE, ""),
+        (OutputFormat.JSON, ""),
+        (OutputFormat.YAML, ""),
+        (OutputFormat.CSV, ""),
+        (OutputFormat.RAW, ""),
+    ],
+)
+def test_format_results_empty(outform, expected):
+    outstr = ssl_certinfo.format_results({}, outform)
+    assert outstr == ""

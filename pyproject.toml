@@ -1,0 +1,55 @@
+[tool]
+[tool.poetry]
+name = "ssl_certinfo"
+version = "1.0.0"
+description = "SSL CertInfo collects information about SSL certificates from a set of hosts."
+authors = ["StdTom <stdtom@gmx.net>"]
+license = "Apache Software License 2.0"
+
+readme = "README.rst"
+
+homepage = "https://github.com/stdtom/ssl_certinfo"
+
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8"
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+pyopenssl = "*"
+pyyaml = "*"
+tqdm = "*"
+pandas = "*"
+tabulate = "*"
+
+[tool.poetry.dev-dependencies]
+black = "==19.10b0"
+bump2version = "*"
+coverage = "*"
+flake8 = "*"
+isort = "*"
+pre-commit = "*"
+pytest = "*"
+pytest-runner = "*"
+pytest-timeout = "*"
+sphinx = "*"
+tox = "*"
+twine = "*"
+watchdog = "*"
+wheel = "*"
+pyinstaller = "*"
+pefile = "*"
+
+[tool.poetry.scripts]
+ssl_certinfo = "ssl_certinfo.cli:main"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

@@ -58,17 +58,20 @@ Get Started!
 ------------
 
 Ready to contribute? Here's how to set up `ssl_certinfo` for local development.
+These instructions will assume that you have already poetry (https://python-poetry.org/) locally installed
+on your development computer.
 
 1. Fork the `ssl_certinfo` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone git@github.com:your_name_here/ssl_certinfo.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Initialize your local development environment of ssl_certinfo.copy.
+   This will include creating a virtualenv using poetry, installing dependencies and registering git hooks
+   using pre-commit::
 
-    $ mkvirtualenv ssl_certinfo
     $ cd ssl_certinfo/
-    $ python setup.py develop
+    $ make init-dev
 
 4. Create a branch for local development::
 
@@ -76,14 +79,14 @@ Ready to contribute? Here's how to set up `ssl_certinfo` for local development.
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
+5. When you're done making changes, check that your changes pass linting, formating, and the
    tests, including testing other Python versions with tox::
 
-    $ flake8 ssl_certinfo tests
-    $ python setup.py test or pytest
-    $ tox
+    $ make lint         # check style with flake8
+    $ make format       # run autoformat with isort and black
+    $ make test         # run tests quickly with the default Python
+    $ make test-all     # run tests on every Python version with tox
 
-   To get flake8 and tox, just pip install them into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -102,7 +105,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 3.5, 3.6, 3.7 and 3.8, and for PyPy. Check
+3. The pull request should work for Python 3.6, 3.7 and 3.8, and for PyPy. Check
    https://travis-ci.com/stdtom/ssl_certinfo/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
@@ -111,7 +114,7 @@ Tips
 
 To run a subset of tests::
 
-$ pytest tests.test_ssl_certinfo
+$ poetry run pytest  tests/test_ssl_certinfo.py
 
 
 Deploying
