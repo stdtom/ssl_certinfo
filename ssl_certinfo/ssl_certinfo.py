@@ -55,25 +55,54 @@ def ssl_handshake_helper(sock_ssl):
                 raise TimeoutError
 
 
-def get_certificate(hostname, port, timeout=5):
+def get_certificate(hostname, port, timeout=5, proxy=None):
+    loglocal = logging.getLogger("ssl_certinfo.get_certificate")
+    loglocal.debug("Start get_certificate")
     sock = socket()
+    loglocal.debug("Setting socket timeout to {}".format(timeout))
     sock.settimeout(timeout)
-    sock.connect((hostname, port))
+    if proxy:
+        PROXY_ADDR = proxy[1:]
 
+        CONNECT = "CONNECT {}:{} HTTP/1.0\r\nConnection: close\r\n\r\n".format(
+            hostname, port,
+        )
+
+        loglocal.debug("Connecting to proxy {}".format(PROXY_ADDR))
+        sock.connect(PROXY_ADDR)
+        loglocal.debug("Connected to proxy")
+
+        loglocal.debug("Sending '{}'".format(CONNECT.encode()))
+        sock.send(CONNECT.encode())
+        response = sock.recv(4096)
+        loglocal.debug("Proxy responds '{}'".format(response))
+    else:
+        TARGET_ADDR = (hostname, port)
+        loglocal.debug("Connecting to target {}".format(TARGET_ADDR))
+        sock.connect(TARGET_ADDR)
+        loglocal.debug("Connected to target")
+
+    loglocal.debug("Create SSL context")
     context = SSL.Context(SSL.SSLv23_METHOD)
 
     context.check_hostname = False
     context.verify_mode = SSL.VERIFY_NONE
 
+    loglocal.debug("Starting SSL handshake")
     sock_ssl = SSL.Connection(context, sock)
     sock_ssl.set_connect_state()
     sock_ssl.set_tlsext_host_name(hostname.encode())
     ssl_handshake_helper(sock_ssl)
+    loglocal.debug("SSL handshake completed")
+
     cert = sock_ssl.get_peer_certificate()
+    loglocal.debug("Certificate received. Closing socckets")
 
     sock_ssl.close()
     sock.close()
+    loglocal.debug("Sockets closed")
 
+    loglocal.debug("get_certificate completed")
     return cert.to_cryptography()
 
 
@@ -93,7 +122,9 @@ def result_to_dataframe(result_dict):
     return df
 
 
-def process_hosts(hosts, default_port, timeout=5, outform=OutputFormat.TABLE):
+def process_hosts(
+    hosts, default_port, timeout=5, outform=OutputFormat.TABLE, proxy=None
+):
     results = {}
 
     progbar = tqdm(hosts)
@@ -102,7 +133,7 @@ def process_hosts(hosts, default_port, timeout=5, outform=OutputFormat.TABLE):
         progbar.set_description(f"Checking {host}...")
         try:
             logging.info("Trying to fetch certificate for " + host)
-            cert = get_certificate(host, default_port, timeout)
+            cert = get_certificate(host, default_port, timeout, proxy)
         except (OSError, SSL.Error):
             logging.info("Could not fetch certificate for " + host)
         else:

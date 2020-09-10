@@ -178,6 +178,14 @@ def create_parser():
         help="Maximum time allowed for connection",
     )
 
+    parser.add_argument(
+        "-x",
+        "--proxy",
+        default="",
+        type=check_proxy_url,
+        help="Use proxy on given port",
+    )
+
     output_format = parser.add_mutually_exclusive_group()
     output_format.add_argument(
         "-T",
@@ -247,7 +255,7 @@ def main():
     logging.info("Arguments: " + str(args))
 
     ssl_certinfo.process_hosts(
-        expand_hosts(args.host), args.port, args.timeout, args.outform
+        expand_hosts(args.host), args.port, args.timeout, args.outform, args.proxy
     )
     return 0
 

@@ -209,6 +209,35 @@ def test_get_certificate_fail(hostname, port, comment):
         assert ssl_certinfo.get_certificate(hostname, port, 5)
 
 
+@pytest.mark.parametrize(
+    "hostname,port,proxy,expected",
+    [
+        ("github.com", 443, ("http", "localhost", 8899), "github.com",),
+        ("1.1.1.1", 443, ("http", "localhost", 8899), "cloudflare",),
+    ],
+)
+def test_get_certificate_with_proxy_success(hostname, port, proxy, expected):
+    cert = ssl_certinfo.get_certificate(hostname, port, proxy=proxy)
+
+    assert cert
+    assert (
+        cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value.find(expected)
+        >= 0
+    )
+
+
+@pytest.mark.parametrize(
+    "hostname,port,proxy,comment",
+    [
+        ("github.com", 443, ("http", "localhost", 12345), "github.com",),
+        ("1.1.1.1", 443, ("http", "localhost", 12345), "cloudflare",),
+    ],
+)
+def test_get_certificate_with_proxy_fail(hostname, port, proxy, comment):
+    with pytest.raises((ConnectionRefusedError, OSError, SSL.Error)):
+        assert ssl_certinfo.get_certificate(hostname, port, 5, proxy)
+
+
 @pytest.mark.skipif(
     ("TRAVIS" not in os.environ) or (os.environ["TRAVIS"] != "true"),
     reason="Skip test if not running on travis-ci.com",
