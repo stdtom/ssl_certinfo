@@ -11,6 +11,7 @@ import threading
 import time
 from datetime import datetime
 
+import proxy
 import pytest
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_pem_x509_certificate
@@ -21,6 +22,8 @@ from ssl_certinfo import ssl_certinfo
 from ssl_certinfo.ssl_certinfo import OutputFormat
 
 global_sock = None
+proxydaemon = None
+stop_proxy = False
 
 
 def start_web_server(port):
@@ -42,25 +45,52 @@ def start_web_server(port):
                 conn.close()
 
 
+def start_proxy(port):
+    global stop_proxy
+    HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+
+    with proxy.start(["--hostname", HOST, "--port", str(port), "--num-workers", "1"]):
+        while not stop_proxy:
+            time.sleep(2)
+
+
 def setup_module(module):
-    port = 12345
+    global proxydaemon
+    webserver_port = 12345
+    proxy_port = 8899
+
     webdaemon = threading.Thread(
-        name="webdaemon_server", target=start_web_server, args=[port]
+        name="webdaemon_server", target=start_web_server, args=[webserver_port]
     )
     webdaemon.setDaemon(
         True
     )  # Set as a daemon so it will be killed once the main thread is dead.
     webdaemon.start()
 
+    proxydaemon = threading.Thread(
+        name="proxydaemon_server", target=start_proxy, args=[proxy_port]
+    )
+    proxydaemon.setDaemon(
+        True
+    )  # Set as a daemon so it will be killed once the main thread is dead.
+    proxydaemon.start()
+
     time.sleep(5)
 
 
 def teardown_module(module):
+    global global_sock
+    global proxydaemon
+    global stop_proxy
+
     try:
         global_sock.shutdown(socket.SHUT_RDWR)
     except (socket.error, OSError, ValueError):
         pass
     global_sock.close()
+
+    stop_proxy = True
+    proxydaemon.join()
 
 
 @pytest.fixture
