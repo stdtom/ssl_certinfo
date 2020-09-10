@@ -23,7 +23,7 @@ from ssl_certinfo.ssl_certinfo import OutputFormat
 global_sock = None
 
 
-def start_tcp_server(port):
+def start_web_server(port):
     global global_sock
     HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 
@@ -44,13 +44,13 @@ def start_tcp_server(port):
 
 def setup_module(module):
     port = 12345
-    daemon = threading.Thread(
-        name="daemon_server", target=start_tcp_server, args=[port]
+    webdaemon = threading.Thread(
+        name="webdaemon_server", target=start_web_server, args=[port]
     )
-    daemon.setDaemon(
+    webdaemon.setDaemon(
         True
     )  # Set as a daemon so it will be killed once the main thread is dead.
-    daemon.start()
+    webdaemon.start()
 
     time.sleep(5)
 
