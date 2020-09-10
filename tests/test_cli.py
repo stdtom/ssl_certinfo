@@ -19,6 +19,58 @@ def parser():
     return cli.create_parser()
 
 
+@pytest.mark.parametrize(
+    "proxyurl, expected",
+    [
+        ("http://myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("http://100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("http://myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("http://100.100.100.100", ("http", "100.100.100.100", 3128)),
+        ("myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("100.100.100.100", ("http", "100.100.100.100", 3128)),
+    ],
+)
+def test_parse_proxy_url(proxyurl, expected):
+    assert expected == cli.parse_proxy_url(proxyurl)
+
+
+@pytest.mark.parametrize(
+    "proxyurl, expected",
+    [
+        ("", None),
+        ("http://myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("http://100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("http://myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("http://100.100.100.100", ("http", "100.100.100.100", 3128)),
+        ("myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("100.100.100.100", ("http", "100.100.100.100", 3128)),
+    ],
+)
+def test_valid_proxy_url(proxyurl, expected):
+    assert expected == cli.check_proxy_url(proxyurl)
+
+
+@pytest.mark.parametrize(
+    "test_input",
+    [
+        "ftp://myproxy.domain.org:8080",
+        "http://100.100.100.100.1:8080",
+        "ftp://myproxy.domain.org",
+        "myproxy.domain.org:0",
+        "myproxy.domain.org:65536",
+        "myproxy.domain.org:port",
+        "myproxy.domain.org:_",
+    ],
+)
+def test_invalid_proxy_url(test_input):
+    with pytest.raises((ArgumentTypeError)):
+        assert not cli.check_proxy_url(test_input)
+
+
 @pytest.mark.parametrize("test_input", [1, 2, 65535, "2"])
 def test_valid_positive(test_input):
     assert cli.check_positive(test_input)
