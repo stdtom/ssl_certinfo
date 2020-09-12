@@ -71,6 +71,33 @@ def test_invalid_proxy_url(test_input):
         assert not cli.check_proxy_url(test_input)
 
 
+@pytest.mark.parametrize(
+    "args,expected,comment",
+    [
+        (["github.com"], None, "default no proxy"),
+        (
+            ["github.com", "-x", "http://myproxy.domain.org:8080"],
+            ("http", "myproxy.domain.org", 8080),
+            "valid proxy",
+        ),
+    ],
+)
+def test_cli_valid_proxy_url(parser, args, expected, comment):
+    """Sample pytest test function with the pytest fixture as an argument."""
+    args = parser.parse_args(args)
+    assert args.proxy == expected
+
+
+@pytest.mark.parametrize(
+    "args,expected,comment",
+    [(["github.com", "-x", "ftp://myproxy.domain.org:8080"], None, "invalid proxy")],
+)
+def test_cli_invalid_proxy_url(parser, args, expected, comment):
+    """Sample pytest test function with the pytest fixture as an argument."""
+    with pytest.raises(SystemExit):
+        args = parser.parse_args(args)
+
+
 @pytest.mark.parametrize("test_input", [1, 2, 65535, "2"])
 def test_valid_positive(test_input):
     assert cli.check_positive(test_input)
