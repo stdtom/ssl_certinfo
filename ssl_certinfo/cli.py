@@ -2,6 +2,7 @@
 import argparse
 import ipaddress
 import logging
+import os
 import re
 import sys
 from typing import Tuple
@@ -181,7 +182,7 @@ def create_parser():
     parser.add_argument(
         "-x",
         "--proxy",
-        default="",
+        default=get_proxy_from_env(),
         type=check_proxy_url,
         help="Use proxy on given port",
     )
@@ -234,6 +235,26 @@ def create_parser():
     )
 
     return parser
+
+
+def get_proxy_from_env():
+    locallogger = logging.getLogger("cli.get_proxy_from_env")
+    env_keys = [
+        "http_proxy",
+        "HTTP_PROXY",
+        "https_proxy",
+        "HTTPS_PROXY",
+    ]
+    env = os.environ
+    for key in env_keys:
+        if key in env:
+            locallogger.debug(
+                "Environment variable {} found with value: {}".format(key, env[key])
+            )
+            return env[key]
+
+    locallogger.debug("No proxy environment variable found.")
+    return ""
 
 
 def setup_logging(verbosity):
