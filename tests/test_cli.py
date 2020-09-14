@@ -151,6 +151,12 @@ def test_cli_invalid_proxy_url(parser, args, expected, comment):
             ("http", "cli.proxy.org", 8080),
             "cli overwrites HTTPS_PROXY env variable",
         ),
+        (
+            ["github.com", "-x", ""],
+            ("http_proxy", "http://env.proxy.org:8080"),
+            None,
+            "unset http_proxy env variable with option -x",
+        ),
     ],
 )
 def test_cli_valid_proxy_url_with_env(monkeypatch, args, env, expected, comment):
