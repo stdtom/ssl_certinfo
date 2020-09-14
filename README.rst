@@ -92,6 +92,8 @@ Features
   * ip ranges, e.g. ``10.0.0.1-10.0.0.10``,
   * or any combination of the previous.
 
+* Connect to target hosts via an http proxy (optional).
+
 * Results will be presented in various output formats: ``--table``, ``--json``, ``--yaml``, ``--csv``, ``--raw``.
 
 
@@ -119,7 +121,7 @@ You can also invoke it through the Python interpreter from the command line::
 Help is available with the ``--help`` or ``-h`` switch::
 
   $ ssl_certinfo -h
-  usage: ssl_certinfo [-h] [-V] [-v | -q] [-p PORT] [-t TIMEOUT] [-T | -j | -y | -c | -r] [host [host ...]]
+  usage: ssl_certinfo [-h] [-V] [-v | -q] [-p PORT] [-t TIMEOUT] [-x [protocol://]host[:port]] [-T | -j | -y | -c | -r] [host [host ...]]
 
   Collect information about SSL certificates from a set of hosts
 
@@ -134,6 +136,8 @@ Help is available with the ``--help`` or ``-h`` switch::
   -p PORT, --port PORT  TCP port to connnect to [0-65535]
   -t TIMEOUT, --timeout TIMEOUT
                         Maximum time allowed for connection
+  -x [protocol://]host[:port], --proxy [protocol://]host[:port]
+                        Use the specified proxy
   -T, --table           Print results in table format
   -j, --json            Print results in JSON format
   -y, --yaml            Print results in YAML format
@@ -141,6 +145,21 @@ Help is available with the ``--help`` or ``-h`` switch::
   -r, --raw             Print results in raw format
 
 
+Proxy
+-----
+
+Optionally an http proxy can be specified which will be used to connect to the target hosts. The proxy can be
+specified using the ``-x, --proxy`` option or using one of the following environment variables:
+
+* ``http_proxy``
+* ``HTTP_PROXY``
+* ``https_proxy``
+* ``HTTPS_PROXY``
+
+The environment variables can be specified in lower case or upper case. The lower case version has precedence.
+
+The ``-x, --proxy`` option overrides existing environment variables that set the proxy to use.
+If there's an environment variable setting a proxy, you can use  ``-x ""`` to override it.
 
 
 Credits
