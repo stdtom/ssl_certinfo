@@ -184,7 +184,8 @@ def create_parser():
         "--proxy",
         default=get_proxy_from_env(),
         type=check_proxy_url,
-        help="Use proxy on given port",
+        help="Use the specified proxy",
+        metavar="[protocol://]host[:port]",
     )
 
     output_format = parser.add_mutually_exclusive_group()
