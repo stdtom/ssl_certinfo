@@ -6,6 +6,7 @@ Use tox or py.test to run the test suite.
 """
 
 import subprocess
+import sys
 from argparse import ArgumentTypeError
 
 import pytest
@@ -188,6 +189,10 @@ def test_cli_proxy_env_priority(monkeypatch, env1, prio1, env2, prio2):
     # Do NOT use parser fixture here as in other test_cli_* test cases.
     # Fixture is being created before environment variable is monkeypatched.
     args = cli.create_parser().parse_args(args)
+
+    if sys.platform == "win32":
+        args.proxy = (args.proxy[0], args.proxy[1].upper(), args.proxy[2])
+        expected = (expected[0], expected[1].upper(), expected[2])
 
     assert args.proxy == expected
 
