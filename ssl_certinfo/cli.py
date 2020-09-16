@@ -56,11 +56,12 @@ def parse_proxy_url(proxyurl) -> Tuple[str, str, int]:
 
     if not proto:
         proto = "http"
-    if host:
-        if not validation.is_valid_hostname(
-            host
-        ) and not validation.is_valid_ip_address(host):
-            raise ValueError("Not a valid hostname or ip address: {}".format(port))
+    if (
+        host
+        and not validation.is_valid_hostname(host)
+        and not validation.is_valid_ip_address(host)
+    ):
+        raise ValueError("Not a valid hostname or ip address: {}".format(port))
     if not port:
         port = 3128
     elif not (0 < int(port) <= 65535):
