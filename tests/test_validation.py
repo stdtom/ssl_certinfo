@@ -56,7 +56,7 @@ def test_valid_ip_range(test_input):
         "192.168.0.1-192.168.0.1",  # range of only one ip address
         "10.0.0.1/32 - 10.0.0.5",  # start ip is cidr
         "a.b.c - 1.1.1.1",  # start is not a valid ip
-        "abcde",  # characters
+        "abcdex",  # characters
     ],
 )
 def test_invalid_ip_range(test_input):
