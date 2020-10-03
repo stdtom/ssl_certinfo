@@ -6,6 +6,7 @@ Use tox or py.test to run the test suite.
 """
 
 import subprocess
+import sys
 from argparse import ArgumentTypeError
 
 import pytest
@@ -17,6 +18,189 @@ from ssl_certinfo.ssl_certinfo import OutputFormat
 @pytest.fixture
 def parser():
     return cli.create_parser()
+
+
+@pytest.mark.parametrize(
+    "proxyurl, expected",
+    [
+        ("http://myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("http://100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("http://myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("http://100.100.100.100", ("http", "100.100.100.100", 3128)),
+        ("myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("100.100.100.100", ("http", "100.100.100.100", 3128)),
+    ],
+)
+def test_parse_proxy_url(proxyurl, expected):
+    assert expected == cli.parse_proxy_url(proxyurl)
+
+
+@pytest.mark.parametrize(
+    "proxyurl, expected",
+    [
+        ("", None),
+        ("http://myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("http://100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("http://myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("http://100.100.100.100", ("http", "100.100.100.100", 3128)),
+        ("myproxy.domain.org:8080", ("http", "myproxy.domain.org", 8080)),
+        ("100.100.100.100:8080", ("http", "100.100.100.100", 8080)),
+        ("myproxy.domain.org", ("http", "myproxy.domain.org", 3128)),
+        ("100.100.100.100", ("http", "100.100.100.100", 3128)),
+    ],
+)
+def test_valid_proxy_url(proxyurl, expected):
+    assert expected == cli.check_proxy_url(proxyurl)
+
+
+@pytest.mark.parametrize(
+    "test_input",
+    [
+        "ftp://myproxy.domain.org:8080",
+        "http://100.100.100.100.1:8080",
+        "ftp://myproxy.domain.org",
+        "myproxy.domain.org:0",
+        "myproxy.domain.org:65536",
+        "myproxy.domain.org:port",
+        "myproxy.domain.org:_",
+    ],
+)
+def test_invalid_proxy_url(test_input):
+    with pytest.raises((ArgumentTypeError)):
+        assert not cli.check_proxy_url(test_input)
+
+
+@pytest.mark.parametrize(
+    "args,expected,comment",
+    [
+        (["github.com"], None, "default no proxy"),
+        (
+            ["github.com", "-x", "http://cli.proxy.org:8080"],
+            ("http", "cli.proxy.org", 8080),
+            "valid proxy",
+        ),
+    ],
+)
+def test_cli_valid_proxy_url(parser, args, expected, comment):
+    """Sample pytest test function with the pytest fixture as an argument."""
+    args = parser.parse_args(args)
+    assert args.proxy == expected
+
+
+@pytest.mark.parametrize(
+    "args,expected,comment",
+    [(["github.com", "-x", "ftp://myproxy.domain.org:8080"], None, "invalid proxy")],
+)
+def test_cli_invalid_proxy_url(parser, args, expected, comment):
+    """Sample pytest test function with the pytest fixture as an argument."""
+    with pytest.raises(SystemExit):
+        args = parser.parse_args(args)
+
+
+@pytest.mark.parametrize(
+    "args,env,expected,comment",
+    [
+        (["github.com"], None, None, "default, no proxy set"),
+        (
+            ["github.com"],
+            ("http_proxy", "env.proxy.org:8080"),
+            ("http", "env.proxy.org", 8080),
+            "http_proxy",
+        ),
+        (
+            ["github.com"],
+            ("https_proxy", "env.proxy.org:8080"),
+            ("http", "env.proxy.org", 8080),
+            "https_proxy",
+        ),
+        (
+            ["github.com"],
+            ("HTTP_PROXY", "env.proxy.org:8080"),
+            ("http", "env.proxy.org", 8080),
+            "HTTP_PROXY",
+        ),
+        (
+            ["github.com"],
+            ("HTTPS_PROXY", "env.proxy.org:8080"),
+            ("http", "env.proxy.org", 8080),
+            "HTTPS_PROXY",
+        ),
+        (
+            ["github.com", "-x", "cli.proxy.org:8080"],
+            ("http_proxy", "http://env.proxy.org:8080"),
+            ("http", "cli.proxy.org", 8080),
+            "cli overwrites http_proxy env variable",
+        ),
+        (
+            ["github.com", "-x", "cli.proxy.org:8080"],
+            ("http_proxys", "http://env.proxy.org:8080"),
+            ("http", "cli.proxy.org", 8080),
+            "cli overwrites http_proxys env variable",
+        ),
+        (
+            ["github.com", "-x", "cli.proxy.org:8080"],
+            ("HTTP_PROXY", "http://env.proxy.org:8080"),
+            ("http", "cli.proxy.org", 8080),
+            "cli overwrites HTTP_PROXY env variable",
+        ),
+        (
+            ["github.com", "-x", "cli.proxy.org:8080"],
+            ("HTTPS_PROXY", "http://env.proxy.org:8080"),
+            ("http", "cli.proxy.org", 8080),
+            "cli overwrites HTTPS_PROXY env variable",
+        ),
+        (
+            ["github.com", "-x", ""],
+            ("http_proxy", "http://env.proxy.org:8080"),
+            None,
+            "unset http_proxy env variable with option -x",
+        ),
+    ],
+)
+def test_cli_valid_proxy_url_with_env(monkeypatch, args, env, expected, comment):
+    """Sample pytest test function with the pytest fixture as an argument."""
+    if env:
+        monkeypatch.setenv(env[0], env[1])
+
+    # Do NOT use parser fixture here as in other test_cli_* test cases.
+    # Fixture is being created before environment variable is monkeypatched.
+    args = cli.create_parser().parse_args(args)
+
+    assert args.proxy == expected
+
+
+@pytest.mark.parametrize(
+    "env1,prio1",
+    [("http_proxy", 1), ("HTTP_PROXY", 2), ("https_proxy", 3), ("HTTPS_PROXY", 4)],
+)
+@pytest.mark.parametrize(
+    "env2,prio2",
+    [("http_proxy", 1), ("HTTP_PROXY", 2), ("https_proxy", 3), ("HTTPS_PROXY", 4)],
+)
+def test_cli_proxy_env_priority(monkeypatch, env1, prio1, env2, prio2):
+    """Sample pytest test function with the pytest fixture as an argument."""
+    args = ["github.com"]
+    proxy_url1 = "{}:8080".format(env1).replace("_", "")
+    proxy_url2 = "{}:8080".format(env2).replace("_", "")
+    if prio1 <= prio2:
+        expected = ("http", env1.replace("_", ""), 8080)
+    else:
+        expected = ("http", env2.replace("_", ""), 8080)
+
+    monkeypatch.setenv(env1, proxy_url1)
+    monkeypatch.setenv(env2, proxy_url2)
+
+    # Do NOT use parser fixture here as in other test_cli_* test cases.
+    # Fixture is being created before environment variable is monkeypatched.
+    args = cli.create_parser().parse_args(args)
+
+    if sys.platform == "win32":
+        args.proxy = (args.proxy[0], args.proxy[1].upper(), args.proxy[2])
+        expected = (expected[0], expected[1].upper(), expected[2])
+
+    assert args.proxy == expected
 
 
 @pytest.mark.parametrize("test_input", [1, 2, 65535, "2"])

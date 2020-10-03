@@ -11,6 +11,7 @@ import threading
 import time
 from datetime import datetime
 
+import proxy
 import pytest
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import load_pem_x509_certificate
@@ -21,9 +22,11 @@ from ssl_certinfo import ssl_certinfo
 from ssl_certinfo.ssl_certinfo import OutputFormat
 
 global_sock = None
+proxydaemon = None
+stop_proxy = False
 
 
-def start_tcp_server(port):
+def start_web_server(port):
     global global_sock
     HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
 
@@ -42,25 +45,52 @@ def start_tcp_server(port):
                 conn.close()
 
 
+def start_proxy(port):
+    global stop_proxy
+    HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+
+    with proxy.start(["--hostname", HOST, "--port", str(port), "--num-workers", "1"]):
+        while not stop_proxy:
+            time.sleep(2)
+
+
 def setup_module(module):
-    port = 12345
-    daemon = threading.Thread(
-        name="daemon_server", target=start_tcp_server, args=[port]
+    global proxydaemon
+    webserver_port = 12345
+    proxy_port = 8899
+
+    webdaemon = threading.Thread(
+        name="webdaemon_server", target=start_web_server, args=[webserver_port]
     )
-    daemon.setDaemon(
+    webdaemon.setDaemon(
         True
     )  # Set as a daemon so it will be killed once the main thread is dead.
-    daemon.start()
+    webdaemon.start()
+
+    proxydaemon = threading.Thread(
+        name="proxydaemon_server", target=start_proxy, args=[proxy_port]
+    )
+    proxydaemon.setDaemon(
+        True
+    )  # Set as a daemon so it will be killed once the main thread is dead.
+    proxydaemon.start()
 
     time.sleep(5)
 
 
 def teardown_module(module):
+    global global_sock
+    global proxydaemon
+    global stop_proxy
+
     try:
         global_sock.shutdown(socket.SHUT_RDWR)
     except (socket.error, OSError, ValueError):
         pass
     global_sock.close()
+
+    stop_proxy = True
+    proxydaemon.join()
 
 
 @pytest.fixture
@@ -177,6 +207,35 @@ def test_get_certificate_success(hostname, port, expected):
 def test_get_certificate_fail(hostname, port, comment):
     with pytest.raises((ConnectionRefusedError, OSError, SSL.Error)):
         assert ssl_certinfo.get_certificate(hostname, port, 5)
+
+
+@pytest.mark.parametrize(
+    "hostname,port,proxy,expected",
+    [
+        ("github.com", 443, ("http", "localhost", 8899), "github.com",),
+        ("1.1.1.1", 443, ("http", "localhost", 8899), "cloudflare",),
+    ],
+)
+def test_get_certificate_with_proxy_success(hostname, port, proxy, expected):
+    cert = ssl_certinfo.get_certificate(hostname, port, proxy=proxy)
+
+    assert cert
+    assert (
+        cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value.find(expected)
+        >= 0
+    )
+
+
+@pytest.mark.parametrize(
+    "hostname,port,proxy,comment",
+    [
+        ("github.com", 443, ("http", "localhost", 12345), "github.com",),
+        ("1.1.1.1", 443, ("http", "localhost", 12345), "cloudflare",),
+    ],
+)
+def test_get_certificate_with_proxy_fail(hostname, port, proxy, comment):
+    with pytest.raises((ConnectionRefusedError, OSError, SSL.Error)):
+        assert ssl_certinfo.get_certificate(hostname, port, 5, proxy)
 
 
 @pytest.mark.skipif(

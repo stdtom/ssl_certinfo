@@ -2,8 +2,10 @@
 import argparse
 import ipaddress
 import logging
+import os
 import re
 import sys
+from typing import Tuple
 
 from ssl_certinfo import __author__, __email__, __version__, ssl_certinfo, validation
 from ssl_certinfo.ssl_certinfo import OutputFormat
@@ -27,6 +29,45 @@ def check_hostname_or_ip_address(value):
             "%s is not a valid hostname or ip address" % value
         )
     return value
+
+
+def check_proxy_url(value):
+    """Validate if parameter is a valid proxy url."""
+    try:
+        parsed = parse_proxy_url(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("%s is not a valid proxy url" % value)
+
+    return parsed
+
+
+def parse_proxy_url(proxyurl) -> Tuple[str, str, int]:
+    if proxyurl == "":
+        return None
+
+    proto = host = port = ""
+    match = re.match(r"^((http[s]?|socks):\/\/)?([^:\/\s]+)(:(\d+))?$", proxyurl)
+    if match:
+        x, proto, host, x, port = match.groups(default="")
+    else:
+        locallogger = logging.getLogger("validate.parse_proxy_url")
+        locallogger.debug("Not a valid proxy url: {}".format(proxyurl))
+        raise ValueError("Not a valid proxy url: {}".format(proxyurl))
+
+    if not proto:
+        proto = "http"
+    if (
+        host
+        and not validation.is_valid_hostname(host)
+        and not validation.is_valid_ip_address(host)
+    ):
+        raise ValueError("Not a valid hostname or ip address: {}".format(port))
+    if not port:
+        port = 3128
+    elif not (0 < int(port) <= 65535):
+        raise ValueError("Invalid port number: {}".format(port))
+
+    return proto, host, int(port)
 
 
 def check_positive(value):
@@ -139,6 +180,15 @@ def create_parser():
         help="Maximum time allowed for connection",
     )
 
+    parser.add_argument(
+        "-x",
+        "--proxy",
+        default=get_proxy_from_env(),
+        type=check_proxy_url,
+        help="Use the specified proxy",
+        metavar="[protocol://]host[:port]",
+    )
+
     output_format = parser.add_mutually_exclusive_group()
     output_format.add_argument(
         "-T",
@@ -189,6 +239,26 @@ def create_parser():
     return parser
 
 
+def get_proxy_from_env():
+    locallogger = logging.getLogger("cli.get_proxy_from_env")
+    env_keys = [
+        "http_proxy",
+        "HTTP_PROXY",
+        "https_proxy",
+        "HTTPS_PROXY",
+    ]
+    env = os.environ
+    for key in env_keys:
+        if key in env:
+            locallogger.debug(
+                "Environment variable {} found with value: {}".format(key, env[key])
+            )
+            return env[key]
+
+    locallogger.debug("No proxy environment variable found.")
+    return ""
+
+
 def setup_logging(verbosity):
     base_loglevel = 30
     verbosity = min(verbosity, 2)
@@ -208,7 +278,7 @@ def main():
     logging.info("Arguments: " + str(args))
 
     ssl_certinfo.process_hosts(
-        expand_hosts(args.host), args.port, args.timeout, args.outform
+        expand_hosts(args.host), args.port, args.timeout, args.outform, args.proxy
     )
     return 0
 
