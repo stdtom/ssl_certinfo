@@ -9,10 +9,15 @@ license = "Apache Software License 2.0"
 readme = "README.rst"
 
 homepage = "https://github.com/stdtom/ssl_certinfo"
+repository = "https://github.com/stdtom/ssl_certinfo"
 
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Intended Audience :: Developers",
+#    "Development Status :: 1 - Planning",
+#    "Development Status :: 2 - Pre-Alpha",
+#    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
+#    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Information Technology",
     "License :: OSI Approved :: Apache Software License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
