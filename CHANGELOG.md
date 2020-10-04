@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.1 (2020-10-04)
+
+#### Docs
+
+* Missing changelog update for v1.1.0
+* Change project's short description
+
+Full set of changes: [`v1.1.0...v1.1.1`](https://github.com/stdtom/ssl_certinfo/compare/v1.1.0...v1.1.1)
+
 ## v1.1.0 (2020-10-03)
 
 #### New Features
