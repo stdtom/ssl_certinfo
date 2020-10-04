@@ -78,7 +78,7 @@ SSL CertInfo
 .. end-badges
 
 
-SSL CertInfo collects information about SSL certificates from a set of hosts.
+SSL CertInfo displays expiration dates and other information for SSL certificates from a set of hosts.
 
 
 Features
