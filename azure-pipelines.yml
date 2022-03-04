@@ -1,26 +1,9 @@
 stages:
 - stage: Test
-  pool: StageAPool
-  jobs:
-  - job: A1 # will run on "StageAPool" pool based on the pool defined on the stage
-  - job: A2 # will run on "JobPool" pool
-    pool: JobPool
-
-
   jobs:
   - job: Test
     strategy:
       matrix: 
-        US_IE:
-          Location: US
-          Browser: IE
-        US_Chrome:
-          Location: US
-          Browser: Chrome
-        Europe_Chrome:
-          Location: Europe
-          Browser: Chrome
-
         'Python 3.6/Linux':
           image: 'ubuntu-20.04'
           python.version: '3.6'
