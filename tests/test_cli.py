@@ -5,6 +5,7 @@
 Use tox or py.test to run the test suite.
 """
 
+import os
 import subprocess
 import sys
 from argparse import ArgumentTypeError
@@ -400,6 +401,10 @@ def capture(command):
     return out, err, proc.returncode
 
 
+@pytest.mark.skipif(
+    (os.environ["OS"] == "Windows_NT"),
+    reason="Skip test if running on Windows",
+)
 def test_cli_main_version():
     command = "python -m ssl_certinfo -V".split(" ")
     out, err, exitcode = capture(command)
@@ -409,6 +414,10 @@ def test_cli_main_version():
     assert out.decode().find(__email__) >= 0
 
 
+@pytest.mark.skipif(
+    (os.environ["OS"] == "Windows_NT"),
+    reason="Skip test if running on Windows",
+)
 def test_cli_main_single_target():
     command = "python -m ssl_certinfo github.com".split(" ")
     out, err, exitcode = capture(command)
@@ -417,6 +426,10 @@ def test_cli_main_single_target():
     assert (err == b"") or (err.decode().find("100%") >= 0)
 
 
+@pytest.mark.skipif(
+    (os.environ["OS"] == "Windows_NT"),
+    reason="Skip test if running on Windows",
+)
 def test_cli_main_two_targets():
     command = "python -m ssl_certinfo github.com wikipedia.org".split(" ")
     out, err, exitcode = capture(command)
