@@ -3,10 +3,7 @@ stages:
   jobs:
   - job: Test
     strategy:
-      matrix: 
-        'Python 3.6/Linux':
-          image: 'ubuntu-20.04'
-          pythonVersion: '3.6'
+      matrix:
         'Python 3.7/Linux':
           image: 'ubuntu-20.04'
           pythonVersion: '3.7'
