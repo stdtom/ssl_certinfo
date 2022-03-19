@@ -402,8 +402,10 @@ def capture(command):
 
 
 @pytest.mark.skipif(
-    ("TRAVIS_OS_NAME" in os.environ) and (os.environ["TRAVIS_OS_NAME"] == "windows") or
-    ("Agent.OS" in os.environ) and (os.environ["Agent.OS"] == "Windows_NT"),
+    ("TRAVIS_OS_NAME" in os.environ)
+    and (os.environ["TRAVIS_OS_NAME"] == "windows")
+    or ("AGENT_OS" in os.environ)
+    and (os.environ["AGENT_OS"] == "Windows_NT"),
     reason="Skip test if running on Windows",
 )
 def test_cli_main_version():
@@ -416,8 +418,10 @@ def test_cli_main_version():
 
 
 @pytest.mark.skipif(
-    ("TRAVIS_OS_NAME" in os.environ) and (os.environ["TRAVIS_OS_NAME"] == "windows") or
-    ("Agent.OS" in os.environ) and (os.environ["Agent.OS"] == "Windows_NT"),
+    ("TRAVIS_OS_NAME" in os.environ)
+    and (os.environ["TRAVIS_OS_NAME"] == "windows")
+    or ("AGENT_OS" in os.environ)
+    and (os.environ["AGENT_OS"] == "Windows_NT"),
     reason="Skip test if running on Windows",
 )
 def test_cli_main_single_target():
@@ -429,8 +433,10 @@ def test_cli_main_single_target():
 
 
 @pytest.mark.skipif(
-    ("TRAVIS_OS_NAME" in os.environ) and (os.environ["TRAVIS_OS_NAME"] == "windows") or
-    ("Agent.OS" in os.environ) and (os.environ["Agent.OS"] == "Windows_NT"),
+    ("TRAVIS_OS_NAME" in os.environ)
+    and (os.environ["TRAVIS_OS_NAME"] == "windows")
+    or ("AGENT_OS" in os.environ)
+    and (os.environ["AGENT_OS"] == "Windows_NT"),
     reason="Skip test if running on Windows",
 )
 def test_cli_main_two_targets():
