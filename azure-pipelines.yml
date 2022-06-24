@@ -4,12 +4,15 @@ stages:
   - job: Test
     strategy:
       matrix:
-        'Python 3.7/Linux':
-          image: 'ubuntu-20.04'
-          pythonVersion: '3.7'
         'Python 3.8/Linux':
           image: 'ubuntu-20.04'
           pythonVersion: '3.8'
+        'Python 3.9/Linux':
+          image: 'ubuntu-20.04'
+          pythonVersion: '3.9'
+        'Python 3.10/Linux':
+          image: 'ubuntu-20.04'
+          pythonVersion: '3.10'
         'Windows Server 2019':
           image: 'windows-2019'
           pythonVersion: '3.8'
