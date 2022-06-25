@@ -212,8 +212,18 @@ def test_get_certificate_fail(hostname, port, comment):
 @pytest.mark.parametrize(
     "hostname,port,proxy,expected",
     [
-        ("github.com", 443, ("http", "localhost", 8899), "github.com",),
-        ("1.1.1.1", 443, ("http", "localhost", 8899), "cloudflare",),
+        (
+            "github.com",
+            443,
+            ("http", "localhost", 8899),
+            "github.com",
+        ),
+        (
+            "1.1.1.1",
+            443,
+            ("http", "localhost", 8899),
+            "cloudflare",
+        ),
     ],
 )
 def test_get_certificate_with_proxy_success(hostname, port, proxy, expected):
@@ -229,8 +239,18 @@ def test_get_certificate_with_proxy_success(hostname, port, proxy, expected):
 @pytest.mark.parametrize(
     "hostname,port,proxy,comment",
     [
-        ("github.com", 443, ("http", "localhost", 12345), "github.com",),
-        ("1.1.1.1", 443, ("http", "localhost", 12345), "cloudflare",),
+        (
+            "github.com",
+            443,
+            ("http", "localhost", 12345),
+            "github.com",
+        ),
+        (
+            "1.1.1.1",
+            443,
+            ("http", "localhost", 12345),
+            "cloudflare",
+        ),
     ],
 )
 def test_get_certificate_with_proxy_fail(hostname, port, proxy, comment):

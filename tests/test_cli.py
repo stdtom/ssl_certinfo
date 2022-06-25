@@ -321,14 +321,30 @@ def test_expand_hosts(inlist, expected, comment):
     [
         pytest.param(
             "23.1.1.1/8".split(" "),
-            256 ** 3,
+            256**3,
             "expand class A network",
             marks=pytest.mark.skip,
         ),
-        ("130.80.0.0/16".split(" "), 65536, "expand class B network",),
-        ("192.168.0.0/24".split(" "), 256, "expand class C network",),
-        ("192.168.0.0/30".split(" "), 4, "expand /30 network",),
-        ("192.168.0.0-192.168.1.255".split(" "), 512, "range of 2 class C networks",),
+        (
+            "130.80.0.0/16".split(" "),
+            65536,
+            "expand class B network",
+        ),
+        (
+            "192.168.0.0/24".split(" "),
+            256,
+            "expand class C network",
+        ),
+        (
+            "192.168.0.0/30".split(" "),
+            4,
+            "expand /30 network",
+        ),
+        (
+            "192.168.0.0-192.168.1.255".split(" "),
+            512,
+            "range of 2 class C networks",
+        ),
     ],
 )
 def test_expand_hosts_large_networks(inlist, expected, comment):
@@ -396,7 +412,11 @@ def test_cli_outform(parser, args, expected, comment):
 
 
 def capture(command):
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
+    proc = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     out, err = proc.communicate()
     return out, err, proc.returncode
 

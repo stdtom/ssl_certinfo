@@ -35,7 +35,7 @@ pandas = "*"
 tabulate = "*"
 
 [tool.poetry.dev-dependencies]
-black = "==19.10b0"
+black = "21.7b0"
 bump2version = "*"
 coverage = "*"
 flake8 = "*"
@@ -50,6 +50,7 @@ twine = "*"
 watchdog = "*"
 wheel = "*"
 "proxy.py" = "2.3.1"
+click = "<=8.0.4"
 
 [tool.poetry.scripts]
 ssl_certinfo = "ssl_certinfo.cli:main"

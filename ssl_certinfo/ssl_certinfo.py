@@ -65,7 +65,8 @@ def get_certificate(hostname, port, timeout=5, proxy=None):
         PROXY_ADDR = proxy[1:]
 
         CONNECT = "CONNECT {}:{} HTTP/1.0\r\nConnection: close\r\n\r\n".format(
-            hostname, port,
+            hostname,
+            port,
         )
 
         loglocal.debug("Connecting to proxy {}".format(PROXY_ADDR))
