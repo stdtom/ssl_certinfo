@@ -51,6 +51,7 @@ watchdog = "*"
 wheel = "*"
 "proxy.py" = "2.3.1"
 click = "<=8.0.4"
+pyinstaller = "*"
 
 [tool.poetry.scripts]
 ssl_certinfo = "ssl_certinfo.cli:main"
