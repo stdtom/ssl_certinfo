@@ -60,18 +60,15 @@ def setup_module(module):
     proxy_port = 8899
 
     webdaemon = threading.Thread(
-        name="webdaemon_server", target=start_web_server, args=[webserver_port]
-    )
-    webdaemon.setDaemon(
-        True
+        name="webdaemon_server",
+        target=start_web_server,
+        args=[webserver_port],
+        daemon=True,
     )  # Set as a daemon so it will be killed once the main thread is dead.
     webdaemon.start()
 
     proxydaemon = threading.Thread(
-        name="proxydaemon_server", target=start_proxy, args=[proxy_port]
-    )
-    proxydaemon.setDaemon(
-        True
+        name="proxydaemon_server", target=start_proxy, args=[proxy_port], daemon=True
     )  # Set as a daemon so it will be killed once the main thread is dead.
     proxydaemon.start()
 
