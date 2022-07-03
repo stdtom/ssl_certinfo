@@ -8,7 +8,7 @@ SSL CertInfo
     :stub-columns: 1
 
     * - build
-      - |travis|
+      - |travis| |azdo-master| |azdo-develop|
     * - quality
       - |codacy| |codeclimate| |sonar-qg| |sonar-rel|
     * - coverage
@@ -22,6 +22,14 @@ SSL CertInfo
 .. |travis| image:: https://img.shields.io/travis/stdtom/ssl_certinfo/master.svg?logo=travis
    :target: https://travis-ci.com/stdtom/ssl_certinfo
    :alt: Travis Build Status
+
+.. |azdo-develop| image:: https://dev.azure.com/stdtom/ssl_certinfo/_apis/build/status/stdtom.ssl_certinfo?branchName=develop
+   :target: https://dev.azure.com/stdtom/ssl_certinfo/_build/latest?definitionId=10&branchName=develop
+   :alt: Build Status Develop
+
+.. |azdo-master| image:: https://dev.azure.com/stdtom/ssl_certinfo/_apis/build/status/stdtom.ssl_certinfo?branchName=master
+   :target: https://dev.azure.com/stdtom/ssl_certinfo/_build/latest?definitionId=10&branchName=master
+   :alt: Build Status Master
 
 .. |codacy| image:: https://api.codacy.com/project/badge/Grade/589c03a215ec4ddbb0085b523a857e55
    :target: https://www.codacy.com/manual/stdtom/ssl_certinfo
