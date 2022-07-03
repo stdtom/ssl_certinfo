@@ -1,21 +1,33 @@
+trigger:
+  tags:
+    include:
+    - 'v*'
+  branches:
+    include:
+    - '*'
+variables:
+- group: PyPi
 stages:
 - stage: Test
   jobs:
   - job: Test
     strategy:
-      matrix: 
-        'Python 3.6/Linux':
-          image: 'ubuntu-20.04'
-          python.version: '3.6'
-        'Python 3.7/Linux':
-          image: 'ubuntu-20.04'
-          python.version: '3.7'
+      matrix:
         'Python 3.8/Linux':
           image: 'ubuntu-20.04'
-          python.version: '3.8'
+          pythonVersion: '3.8'
+        'Python 3.9/Linux':
+          image: 'ubuntu-20.04'
+          pythonVersion: '3.9'
+        'Python 3.10/Linux':
+          image: 'ubuntu-20.04'
+          pythonVersion: '3.10'
+        'Python 3.9/Mac OS 11':
+          image: 'macOS-11'
+          pythonVersion: '3.9'
         'Windows Server 2019':
           image: 'windows-2019'
-          python.version: '3.8'
+          pythonVersion: '3.8'
 
     pool:
       vmImage: $(image)
@@ -23,14 +35,105 @@ stages:
     steps:
     - task: UsePythonVersion@0
       inputs:
-        versionSpec: '$(python.version)'
+        versionSpec: '$(pythonVersion)'
+
+    - script: |
+        pip install -U poetry
+        pip install -U tox
+      displayName: 'Install Poetry'
+
+    - bash: |
+        PYENV=$(sed -e 's/\.//' <<< "py$(pythonVersion)")
+        tox -e $PYENV
+      displayName: 'Running tests via tox'
+
+- stage: Build_Deploy
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v') )
+  jobs:
+  - job: Linux
+    variables:
+      image: 'ubuntu-20.04'
+      pythonVersion: '3.9'
+
+    pool:
+      vmImage: $(image)
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
 
     - script: |
         pip install -U poetry
       displayName: 'Install Poetry'
 
-    - script: make init-dev
-      displayName: 'Install dependencies'
+    - script: |
+        poetry config http-basic.pypi $(PYPI_USER) $(PYPI_TOKEN)
+      displayName: 'Config Poetry for Deployment'
 
-    - script: poetry run tox -e $[replace(variables['python.version'], '.', '')]
-      displayName: 'Running tests via tox'
+    - script: |
+        BUILDNAME=$(echo "$(System.TeamProject)-$(Build.SourceBranchName)-$(Agent.OS)-$(Agent.OSArchitecture)" | tr '[:upper:]' '[:lower:]')
+        echo ">>>>>>" $BUILDNAME
+        poetry install -v
+        poetry build
+        poetry run pyinstaller $(System.TeamProject)/cli.py -n $(System.TeamProject) --onefile --exclude-module _bootlocale
+        tar cvzf dist/$BUILDNAME.tar.gz dist/$(System.TeamProject)
+        sha256sum dist/$BUILDNAME.tar.gz > dist/$BUILDNAME.tar.gz.sha256
+        ls -R dist
+      displayName: 'Build'
+
+    - script: |
+        poetry publish
+      displayName: 'Publish to PyPI'
+
+    - task: GitHubRelease@1
+      inputs:
+        gitHubConnection: 'github.com_stdtom (Release)'
+        repositoryName: '$(Build.Repository.Name)'
+        action: 'create'
+        target: '$(Build.SourceVersion)'
+        tagSource: 'gitTag'
+        assets: 'dist/$(System.TeamProject)-$(Build.SourceBranchName)-*.*'
+        addChangeLog: false
+
+  - job: Windows
+    dependsOn: Linux
+    variables:
+      image: 'windows-2019'
+      pythonVersion: '3.8'
+
+    pool:
+      vmImage: $(image)
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+
+    - script: |
+        pip install -U poetry
+      displayName: 'Install Poetry'
+
+    - bash: |
+        BUILDNAME=$(echo "$(System.TeamProject)-$(Build.SourceBranchName)-$(Agent.OS)-$(Agent.OSArchitecture)" | tr '[:upper:]' '[:lower:]')
+        echo ">>>>>>" $BUILDNAME
+        poetry install -v
+        poetry build
+        poetry run pyinstaller $(System.TeamProject)/cli.py -n $(System.TeamProject) --onefile --exclude-module _bootlocale
+        ls -R dist
+        7z a dist/$BUILDNAME.zip dist/$(System.TeamProject).exe
+        ls -R dist
+        sha256sum dist/$BUILDNAME.zip > dist/$BUILDNAME.zip.sha256
+        ls -R dist
+      displayName: 'Build'
+
+    - task: GitHubRelease@1
+      inputs:
+        gitHubConnection: 'github.com_stdtom (Release)'
+        repositoryName: '$(Build.Repository.Name)'
+        action: 'edit'
+        target: '$(Build.SourceVersion)'
+        tag: '$(Build.SourceBranchName)'
+        assets: 'dist/$(System.TeamProject)-$(Build.SourceBranchName)-*.*'
+        assetUploadMode: 'replace'
+        addChangeLog: false

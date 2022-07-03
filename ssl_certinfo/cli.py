@@ -161,7 +161,10 @@ def create_parser():
     )
 
     parser.add_argument(
-        "host", nargs="*", type=check_hostname_or_ip_address, help="Connect to HOST",
+        "host",
+        nargs="*",
+        type=check_hostname_or_ip_address,
+        help="Connect to HOST",
     )
 
     parser.add_argument(

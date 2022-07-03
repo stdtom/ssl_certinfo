@@ -5,6 +5,7 @@
 Use tox or py.test to run the test suite.
 """
 
+import os
 import subprocess
 import sys
 from argparse import ArgumentTypeError
@@ -320,14 +321,30 @@ def test_expand_hosts(inlist, expected, comment):
     [
         pytest.param(
             "23.1.1.1/8".split(" "),
-            256 ** 3,
+            256**3,
             "expand class A network",
             marks=pytest.mark.skip,
         ),
-        ("130.80.0.0/16".split(" "), 65536, "expand class B network",),
-        ("192.168.0.0/24".split(" "), 256, "expand class C network",),
-        ("192.168.0.0/30".split(" "), 4, "expand /30 network",),
-        ("192.168.0.0-192.168.1.255".split(" "), 512, "range of 2 class C networks",),
+        (
+            "130.80.0.0/16".split(" "),
+            65536,
+            "expand class B network",
+        ),
+        (
+            "192.168.0.0/24".split(" "),
+            256,
+            "expand class C network",
+        ),
+        (
+            "192.168.0.0/30".split(" "),
+            4,
+            "expand /30 network",
+        ),
+        (
+            "192.168.0.0-192.168.1.255".split(" "),
+            512,
+            "range of 2 class C networks",
+        ),
     ],
 )
 def test_expand_hosts_large_networks(inlist, expected, comment):
@@ -395,11 +412,22 @@ def test_cli_outform(parser, args, expected, comment):
 
 
 def capture(command):
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,)
+    proc = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     out, err = proc.communicate()
     return out, err, proc.returncode
 
 
+@pytest.mark.skipif(
+    ("TRAVIS_OS_NAME" in os.environ)
+    and (os.environ["TRAVIS_OS_NAME"] == "windows")
+    or ("AGENT_OS" in os.environ)
+    and (os.environ["AGENT_OS"] == "Windows_NT"),
+    reason="Skip test if running on Windows",
+)
 def test_cli_main_version():
     command = "python -m ssl_certinfo -V".split(" ")
     out, err, exitcode = capture(command)
@@ -409,6 +437,13 @@ def test_cli_main_version():
     assert out.decode().find(__email__) >= 0
 
 
+@pytest.mark.skipif(
+    ("TRAVIS_OS_NAME" in os.environ)
+    and (os.environ["TRAVIS_OS_NAME"] == "windows")
+    or ("AGENT_OS" in os.environ)
+    and (os.environ["AGENT_OS"] == "Windows_NT"),
+    reason="Skip test if running on Windows",
+)
 def test_cli_main_single_target():
     command = "python -m ssl_certinfo github.com".split(" ")
     out, err, exitcode = capture(command)
@@ -417,6 +452,13 @@ def test_cli_main_single_target():
     assert (err == b"") or (err.decode().find("100%") >= 0)
 
 
+@pytest.mark.skipif(
+    ("TRAVIS_OS_NAME" in os.environ)
+    and (os.environ["TRAVIS_OS_NAME"] == "windows")
+    or ("AGENT_OS" in os.environ)
+    and (os.environ["AGENT_OS"] == "Windows_NT"),
+    reason="Skip test if running on Windows",
+)
 def test_cli_main_two_targets():
     command = "python -m ssl_certinfo github.com wikipedia.org".split(" ")
     out, err, exitcode = capture(command)

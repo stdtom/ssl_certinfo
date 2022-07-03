@@ -60,18 +60,15 @@ def setup_module(module):
     proxy_port = 8899
 
     webdaemon = threading.Thread(
-        name="webdaemon_server", target=start_web_server, args=[webserver_port]
-    )
-    webdaemon.setDaemon(
-        True
+        name="webdaemon_server",
+        target=start_web_server,
+        args=[webserver_port],
+        daemon=True,
     )  # Set as a daemon so it will be killed once the main thread is dead.
     webdaemon.start()
 
     proxydaemon = threading.Thread(
-        name="proxydaemon_server", target=start_proxy, args=[proxy_port]
-    )
-    proxydaemon.setDaemon(
-        True
+        name="proxydaemon_server", target=start_proxy, args=[proxy_port], daemon=True
     )  # Set as a daemon so it will be killed once the main thread is dead.
     proxydaemon.start()
 
@@ -212,8 +209,18 @@ def test_get_certificate_fail(hostname, port, comment):
 @pytest.mark.parametrize(
     "hostname,port,proxy,expected",
     [
-        ("github.com", 443, ("http", "localhost", 8899), "github.com",),
-        ("1.1.1.1", 443, ("http", "localhost", 8899), "cloudflare",),
+        (
+            "github.com",
+            443,
+            ("http", "localhost", 8899),
+            "github.com",
+        ),
+        (
+            "1.1.1.1",
+            443,
+            ("http", "localhost", 8899),
+            "cloudflare",
+        ),
     ],
 )
 def test_get_certificate_with_proxy_success(hostname, port, proxy, expected):
@@ -229,8 +236,18 @@ def test_get_certificate_with_proxy_success(hostname, port, proxy, expected):
 @pytest.mark.parametrize(
     "hostname,port,proxy,comment",
     [
-        ("github.com", 443, ("http", "localhost", 12345), "github.com",),
-        ("1.1.1.1", 443, ("http", "localhost", 12345), "cloudflare",),
+        (
+            "github.com",
+            443,
+            ("http", "localhost", 12345),
+            "github.com",
+        ),
+        (
+            "1.1.1.1",
+            443,
+            ("http", "localhost", 12345),
+            "cloudflare",
+        ),
     ],
 )
 def test_get_certificate_with_proxy_fail(hostname, port, proxy, comment):

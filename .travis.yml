@@ -9,8 +9,6 @@ stages:
 jobs:
   include:
     - python: "3.8"
-    - python: "3.7"
-    - python: "3.6"
     - name: "Python 3.8 on Windows"
       os: windows
       language: shell       # 'language: python' is an error on Travis CI Windows
@@ -50,7 +48,7 @@ jobs:
       os: windows
       language: shell
       before_install:
-        - choco install python --version 3.7.0
+        - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
       script: skip     # usually you do not want to rerun any tests
