@@ -7,6 +7,7 @@ trigger:
     - '*'
 variables:
 - group: PyPi
+- group: Coverage
 stages:
 - stage: Test
   jobs:
@@ -47,6 +48,38 @@ stages:
         tox -e $PYENV
       displayName: 'Running tests via tox'
 
+    - script: |
+        echo ">>>>>>>>>>>>>" $COVERALLS_TEST
+        pip install -U coveralls
+        export CIRCLE_BRANCH=$BUILD_SOURCEBRANCH
+        coveralls
+      displayName: 'Upload coverage to Coveralls'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'linux'), eq(variables['pythonVersion'], '3.10'))
+      env:
+        CIRCLECI: 1
+        CIRCLE_BUILD_NUM: $(Build.BuildNumber)
+        COVERALLS_REPO_TOKEN: $(COVERALLS_REPO_TOKEN)
+        COVERALLS_TEST: $(COVERALLS_TEST)
+
+    - script: |
+        bash <(curl -s https://codecov.io/bash)
+      displayName: 'Upload coverage to Codecov.io'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'linux'), eq(variables['pythonVersion'], '3.10'))
+
+    - script: |
+        pip install -U coveralls
+        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        chmod +x ./cc-test-reporter
+        coverage xml --omit='env/*,tests/*'
+        ./cc-test-reporter format-coverage -t coverage.py
+        ./cc-test-reporter upload-coverage
+      displayName: 'Upload coverage to Code Climate'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'linux'), eq(variables['pythonVersion'], '3.10'))
+      env:
+        CC_TEST_REPORTER_ID: $(CC_TEST_REPORTER_ID)
+        GIT_BRANCH: $(Build.SourceBranchName)
+        GIT_COMMIT: $(Build.SourceVersion)
+
 - stage: Build_Deploy
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v') )
   jobs:
@@ -73,7 +106,6 @@ stages:
 
     - script: |
         BUILDNAME=$(echo "$(System.TeamProject)-$(Build.SourceBranchName)-$(Agent.OS)-$(Agent.OSArchitecture)" | tr '[:upper:]' '[:lower:]')
-        echo ">>>>>>" $BUILDNAME
         poetry install -v
         poetry build
         poetry run pyinstaller $(System.TeamProject)/cli.py -n $(System.TeamProject) --onefile --exclude-module _bootlocale
@@ -116,7 +148,6 @@ stages:
 
     - bash: |
         BUILDNAME=$(echo "$(System.TeamProject)-$(Build.SourceBranchName)-$(Agent.OS)-$(Agent.OSArchitecture)" | tr '[:upper:]' '[:lower:]')
-        echo ">>>>>>" $BUILDNAME
         poetry install -v
         poetry build
         poetry run pyinstaller $(System.TeamProject)/cli.py -n $(System.TeamProject) --onefile --exclude-module _bootlocale
