@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from datetime import datetime
-from socket import socket
+from socket import gaierror, socket
 
 import pandas as pd
 import yaml
@@ -116,15 +116,22 @@ def result_to_dataframe(result_dict):
         "expire_in_days",
         "peername",
         "peerport",
+        "error",
     ]
     df = pd.DataFrame(result_dict).T.rename_axis("peer", axis=1)
     df = df.reindex(columns=column_names)
+    df = df.fillna("-")
 
     return df
 
 
 def process_hosts(
-    hosts, default_port, timeout=5, outform=OutputFormat.TABLE, proxy=None
+    hosts,
+    default_port,
+    timeout=5,
+    outform=OutputFormat.TABLE,
+    proxy=None,
+    exclude_errors=False,
 ):
     results = {}
 
@@ -135,13 +142,29 @@ def process_hosts(
         try:
             logging.info("Trying to fetch certificate for " + host)
             cert = get_certificate(host, default_port, timeout, proxy)
-        except (OSError, SSL.Error):
-            logging.info("Could not fetch certificate for " + host)
+            err = None
+        except TimeoutError:
+            err = "Timeout"
+        except ConnectionRefusedError:
+            err = "Connection refused"
+        except gaierror:
+            err = "Cannot resolve hostname"
+        except OSError as ose:
+            err = "OSError"
+            logging.error(ose)
+        except SSL.Error as ssle:
+            err = "SSL Error"
+            logging.error(ssle)
         else:
             certinfo = get_cert_info(cert)
-            certinfo["peername"] = host
-            certinfo["peerport"] = default_port
 
+        if err is not None:
+            certinfo = {"error": err}
+
+        certinfo["peername"] = host
+        certinfo["peerport"] = default_port
+
+        if not exclude_errors or err is None:
             results[host] = certinfo
     print(format_results(results, outform))
 

@@ -196,6 +196,7 @@ def test_get_certificate_success(hostname, port, expected):
         ("localhost", 2, "connection rejected"),
         ("github.com", 2, "connection timeout"),
         ("github.com", 80, "no ssl on target port"),
+        ("github.nodomain", 443, "dns lookup failure"),
         pytest.param(
             "localhost", 12345, "timeout on ssl handshake"  # , marks=pytest.mark.xfail
         ),
@@ -285,22 +286,26 @@ def test_process_hosts(capsys):
 
 @pytest.mark.timeout(15)
 @pytest.mark.parametrize(
-    "hostname,port,comment",
+    "hostname,port,error,comment",
     [
-        ("localhost", 2, "connection rejected"),
-        ("github.com", 2, "connection timeout"),
-        ("github.com", 80, "no ssl on target port"),
+        ("localhost", 2, "Connection refused", "connection rejected"),
+        ("github.com", 2, "Timeout", "connection timeout"),
+        ("github.com", 80, "Timeout", "no ssl on target port"),
+        ("github.nodomain", 443, "Cannot resolve hostname", "dns resolution error"),
         pytest.param(
-            "localhost", 12345, "timeout on ssl handshake"  # , marks=pytest.mark.xfail
+            "localhost",
+            12345,
+            "Timeout",
+            "timeout on ssl handshake",  # , marks=pytest.mark.xfail
         ),
     ],
 )
-def test_process_hosts_timeout(capsys, hostname, port, comment):
+def test_process_hosts_timeout(capsys, hostname, port, error, comment):
     ssl_certinfo.process_hosts([hostname], port)
 
     out, err = capsys.readouterr()
 
-    assert out == "\n"
+    assert out.find(error) >= 0
 
 
 @pytest.mark.parametrize(
@@ -310,11 +315,12 @@ def test_process_hosts_timeout(capsys, hostname, port, comment):
             OutputFormat.TABLE,
             r"\+-[\+-]+-\+(\r)?\n"
             r"\| +peer +\| +CN +\| +SAN +\| +valid_from +\| +valid_to +\| +"
-            r"expire_in_days +\| +peername +\| +peerport +\|(\r)?\n"
+            r"expire_in_days +\| +peername +\| +peerport +\| +error +\|(\r)?\n"
             r"\+-[\+-]+-\+(\r)?\n"
             r"\| +github.com +\| +github.com +\| +github.com;www.github.com +\| +"
             r"2018-05-08T00:00:00 +\| +"
-            r"2020-06-03T12:00:00 +\| +-?[0-9]+ +\| +github.com +\| +443 +\|(\r)?\n"
+            r"2020-06-03T12:00:00 +\| +"
+            r"-?[0-9]+ +\| +github.com +\| +443 +\| +. +\|(\r)?\n"
             r"\+-[\+-]+-\+",
         ),
         (
@@ -344,16 +350,18 @@ def test_process_hosts_timeout(capsys, hostname, port, comment):
         ),
         (
             OutputFormat.CSV,
-            "peer,CN,SAN,valid_from,valid_to,expire_in_days,peername,peerport(\r)?\n"
+            "peer,CN,SAN,valid_from,valid_to,expire_in_days,"
+            "peername,peerport,error(\r)?\n"
             "github.com,github.com,github.com;www.github.com,2018-05-08T00:00:00,"
-            "2020-06-03T12:00:00,-?[0-9]+,github.com,443",
+            "2020-06-03T12:00:00,-?[0-9]+,github.com,443,-",
         ),
         (
             OutputFormat.RAW,
-            "peer +CN +SAN +valid_from +valid_to +expire_in_days +peername +peerport"
+            "peer +CN +SAN +valid_from +valid_to +expire_in_days +"
+            "peername +peerport +error"
             "(\r)?\n"
             "github.com +github.com +github.com;www.github.com +2018-05-08T00:00:00 +"
-            "2020-06-03T12:00:00 +-?[0-9]+ +github.com +443",
+            "2020-06-03T12:00:00 +-?[0-9]+ +github.com +443 +-",
         ),
     ],
 )

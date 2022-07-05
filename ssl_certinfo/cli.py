@@ -184,6 +184,15 @@ def create_parser():
     )
 
     parser.add_argument(
+        "--exclude-errors",
+        action="store_const",
+        const=True,
+        default=False,
+        dest="exclude_errors",
+        help="do not include hosts were certificate retrieval timed out or an error occurred",  # noqa: E501
+    )
+
+    parser.add_argument(
         "-x",
         "--proxy",
         default=get_proxy_from_env(),
@@ -281,7 +290,12 @@ def main():
     logging.info("Arguments: " + str(args))
 
     ssl_certinfo.process_hosts(
-        expand_hosts(args.host), args.port, args.timeout, args.outform, args.proxy
+        expand_hosts(args.host),
+        args.port,
+        args.timeout,
+        args.outform,
+        args.proxy,
+        args.exclude_errors,
     )
     return 0
 
