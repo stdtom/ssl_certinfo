@@ -143,21 +143,24 @@ def process_hosts(
             logging.info("Trying to fetch certificate for " + host)
             cert = get_certificate(host, default_port, timeout, proxy)
             err = None
-        except TimeoutError:
+        except TimeoutError as terr:
             err = "Timeout"
-        except ConnectionRefusedError:
+            logging.debug(terr)
+        except ConnectionRefusedError as crfe:
             err = "Connection refused"
-        except gaierror:
+            logging.debug(crfe)
+        except gaierror as gaie:
             err = "Cannot resolve hostname"
+            logging.debug(gaie)
         except OSError as ose:
             if ose.args[0] == "timed out":
                 err = "Timeout"
             else:
                 err = "OSError"
-            logging.error(ose)
+            logging.debug(ose)
         except SSL.Error as ssle:
             err = "SSL Error"
-            logging.error(ssle)
+            logging.debug(ssle)
         else:
             certinfo = get_cert_info(cert)
 
