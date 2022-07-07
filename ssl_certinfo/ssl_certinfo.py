@@ -150,7 +150,10 @@ def process_hosts(
         except gaierror:
             err = "Cannot resolve hostname"
         except OSError as ose:
-            err = "OSError"
+            if ose.args[0] == "timed out":
+                err = "Timeout"
+            else:
+                err = "OSError"
             logging.error(ose)
         except SSL.Error as ssle:
             err = "SSL Error"
