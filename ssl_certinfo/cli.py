@@ -25,9 +25,14 @@ def check_hostname_or_ip_address(value):
         and not validation.is_valid_ip_network(value)
         and not validation.is_valid_ip_range(value)
     ):
-        raise argparse.ArgumentTypeError(
-            "%s is not a valid hostname or ip address" % value
-        )
+        if value.startswith("@"):
+            filename = value.lstrip("@")
+            if not os.path.exists(filename):
+                raise FileNotFoundError(filename)
+        else:
+            raise argparse.ArgumentTypeError(
+                "%s is not a valid hostname or ip address" % value
+            )
     return value
 
 
@@ -98,7 +103,18 @@ def expand_hosts(hostlist):
     result = []
 
     for elem in hostlist:
-        if validation.is_valid_hostname(elem) or validation.is_valid_ip_address(elem):
+        if elem == "":
+            pass  # Skip if empty string
+        elif elem.startswith("@"):
+            filename = elem.lstrip("@")
+
+            f = open(filename, "r")
+            lines = f.read().split("\n")
+            f.close()
+
+            result.extend(expand_hosts(lines))
+
+        elif validation.is_valid_hostname(elem) or validation.is_valid_ip_address(elem):
             result.append(elem)
         elif validation.is_valid_ip_range(elem):
             separator = re.compile(r" *- *")

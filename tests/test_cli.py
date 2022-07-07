@@ -309,6 +309,16 @@ def test_cli_invalid_port(parser, args, comment):
             ],
             "expand ip range across subnet boundaries",
         ),
+        (
+            "@tests/test_hostlist.txt".split(" "),
+            ["github.com", "wikipedia.org"],
+            "expand from file",
+        ),
+        (
+            "@tests/test_hostlist.txt 1.1.1.1".split(" "),
+            ["github.com", "wikipedia.org", "1.1.1.1"],
+            "expand from file and hostlist",
+        ),
     ],
 )
 def test_expand_hosts(inlist, expected, comment):
@@ -461,6 +471,22 @@ def test_cli_main_single_target():
 )
 def test_cli_main_two_targets():
     command = "python -m ssl_certinfo github.com wikipedia.org".split(" ")
+    out, err, exitcode = capture(command)
+    assert exitcode == 0
+    assert out.decode().find("github") >= 0
+    assert out.decode().find("wikipedia") >= 0
+    assert (err == b"") or (err.decode().find("100%") >= 0)
+
+
+@pytest.mark.skipif(
+    ("TRAVIS_OS_NAME" in os.environ)
+    and (os.environ["TRAVIS_OS_NAME"] == "windows")
+    or ("AGENT_OS" in os.environ)
+    and (os.environ["AGENT_OS"] == "Windows_NT"),
+    reason="Skip test if running on Windows",
+)
+def test_cli_main_hostfile():
+    command = "python -m ssl_certinfo @tests/test_hostlist.txt".split(" ")
     out, err, exitcode = capture(command)
     assert exitcode == 0
     assert out.decode().find("github") >= 0
