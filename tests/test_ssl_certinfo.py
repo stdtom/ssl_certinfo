@@ -276,12 +276,10 @@ def test_get_certificate_valid_timeout(timeout):
 
 def test_process_hosts(capsys):
     hosts = ["github.com", "wikipedia.org"]
-    ssl_certinfo.process_hosts(hosts, 443)
+    result = ssl_certinfo.process_hosts(hosts, 443)
 
-    out, err = capsys.readouterr()
-
-    assert out.find("github") >= 0
-    assert out.find("wikipedia") >= 0
+    assert "github.com" in result
+    assert "wikipedia.org" in result
 
 
 @pytest.mark.timeout(15)
@@ -301,11 +299,73 @@ def test_process_hosts(capsys):
     ],
 )
 def test_process_hosts_timeout(capsys, hostname, port, error, comment):
-    ssl_certinfo.process_hosts([hostname], port)
+    result = ssl_certinfo.process_hosts([hostname], port)
 
-    out, err = capsys.readouterr()
+    assert hostname in result
+    assert result[hostname]["error"] == error
 
-    assert out.find(error) >= 0
+
+def test_results_two_ok_only():
+    return {
+        "github.com": {
+            "CN": "github.com",
+            "expire_in_days": 200,
+        },
+        "wikipedia.org": {
+            "CN": "wikipedia.org",
+            "expire_in_days": 20,
+        },
+    }
+
+
+def test_results_two_ok_one_error():
+    return {
+        "github.com": {
+            "CN": "github.com",
+            "expire_in_days": 200,
+        },
+        "example.com": {
+            "error": "Timeout",
+        },
+        "wikipedia.org": {
+            "CN": "wikipedia.org",
+            "expire_in_days": 20,
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    "data, exclude_errors, expected,comment",
+    [
+        (
+            test_results_two_ok_only(),
+            False,
+            test_results_two_ok_only(),
+            "two ok without error filtering",
+        ),
+        (
+            test_results_two_ok_only(),
+            True,
+            test_results_two_ok_only(),
+            "two ok with error filtering",
+        ),
+        (
+            test_results_two_ok_one_error(),
+            False,
+            test_results_two_ok_one_error(),
+            "two ok and one error without error filtering",
+        ),
+        (
+            test_results_two_ok_one_error(),
+            True,
+            test_results_two_ok_only(),
+            "two ok and one error with error filtering",
+        ),
+    ],
+)
+def test_filter_results(data, exclude_errors, expected, comment):
+    got = ssl_certinfo.filter_results(data, exclude_errors)
+    assert got == expected
 
 
 @pytest.mark.parametrize(

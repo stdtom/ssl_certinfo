@@ -129,9 +129,7 @@ def process_hosts(
     hosts,
     default_port,
     timeout=5,
-    outform=OutputFormat.TABLE,
     proxy=None,
-    exclude_errors=False,
 ):
     results = {}
 
@@ -170,9 +168,21 @@ def process_hosts(
         certinfo["peername"] = host
         certinfo["peerport"] = default_port
 
-        if not exclude_errors or err is None:
-            results[host] = certinfo
-    print(format_results(results, outform))
+        results[host] = certinfo
+
+    return results
+
+
+def filter_results(unfiltered_results, exclude_errors=False):
+    filtered_results = {}
+
+    for k, v in unfiltered_results.items():
+        if exclude_errors and "error" in v:
+            continue
+
+        filtered_results[k] = v
+
+    return filtered_results
 
 
 def format_results(results, outform):

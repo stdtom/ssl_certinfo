@@ -305,14 +305,15 @@ def main():
 
     logging.info("Arguments: " + str(args))
 
-    ssl_certinfo.process_hosts(
+    results = ssl_certinfo.process_hosts(
         expand_hosts(args.host),
         args.port,
         args.timeout,
-        args.outform,
         args.proxy,
-        args.exclude_errors,
     )
+    filtered_results = ssl_certinfo.filter_results(results, args.exclude_errors)
+    print(ssl_certinfo.format_results(filtered_results, args.outform))
+
     return 0
 
 
